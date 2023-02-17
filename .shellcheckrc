@@ -1,0 +1,8 @@
+# shellcheck configuration file
+# https://www.shellcheck.net/
+# https://github.com/koalaman/shellcheck
+
+
+# Allow shellcheck to access other files
+# https://www.shellcheck.net/wiki/Directive#external-sources
+external-sources=true
