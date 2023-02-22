@@ -15,5 +15,6 @@
     <daily> used in 'sudo crontab' for scheduled backups
 
 ## TODO list
-* TODO Add appropriate script description in README.md file
-* TODO Add conditional messages - depend if script success or not
+- [] Add appropriate script description in README.md file
+- [] Add conditional messages - depend if script success or not
+- [] Add release version to download (in which file format?)
