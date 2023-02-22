@@ -1,6 +1,6 @@
 # Home Server Backup Script
 
-## Features:
+## Features
 * Multiple directory backup:
     * Docker Volumes
     * Docker Bind Mounts
@@ -9,12 +9,12 @@
 * Delete old backup files
 * Archive bakcup every 10 days
 
-## To execute it, use the following command:
+## To execute it, use the following command
 `$ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>`
     <instant> used for executing script from terminal
     <daily> used in 'sudo crontab' for scheduled backups
 
-## TODO list
-- [] Add appropriate script description in README.md file
-- [] Add conditional messages - depend if script success or not
-- [] Add release version to download (in which file format?)
+## Developement checklists
+- [ ] Appropriate script description in README.md file
+- [ ] Conditional messages - depend if script success or not
+- [ ] Release version to download (in which file format?)
