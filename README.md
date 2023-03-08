@@ -37,7 +37,7 @@ To execute it, use the following command:\
 
 ## Developement checklist
 - [X] Functionality chooser
-- [X]`dev` mode [#7](https://github.com/gromoslaw-kroczka/home-server-backup/issues/7)
+- [X] `dev` mode [#7](https://github.com/gromoslaw-kroczka/home-server-backup/issues/7)
 - [X] Gotify Notifications [#6](https://github.com/gromoslaw-kroczka/home-server-backup/issues/6)
 - [ ] Appropriate script description in README.md file [#1](https://github.com/gromoslaw-kroczka/home-server-backup/issues/1)
 - [ ] Conditional messages - depend if script success or not [#2](https://github.com/gromoslaw-kroczka/home-server-backup/issues/2)
