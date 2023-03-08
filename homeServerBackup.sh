@@ -106,7 +106,6 @@ todayDayOfMonth="$(date '+%d')"
 #
 if [ "$type" == "dev" ]; then
     source parameters-dev.sh
-    echo "test"
 else
     source parameters.sh
 fi
@@ -257,12 +256,24 @@ fi
 #
 endTime="$(date '+%F_%H-%M-%S')"
 #
-#   echo short summary
+#   declare summary message
+#
 #
 echo "==== Following tasks completed:"
 echo "$functionality"
 echo "==== Start: $today"
 echo "==== End: $endTime"
+#
+summary="Following tasks completed:
+$functionality
+Start: $today
+End: $endTime"
+#
+echo -e "$summary"
+#
+#   Gotify Summary Notification
+#
+curl "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority=5"
 #
 #endregion
 #
