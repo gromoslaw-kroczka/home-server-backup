@@ -258,12 +258,6 @@ endTime="$(date '+%F_%H-%M-%S')"
 #
 #   declare summary message
 #
-#
-echo "==== Following tasks completed:"
-echo "$functionality"
-echo "==== Start: $today"
-echo "==== End: $endTime"
-#
 summary="Following tasks completed:
 $functionality
 Start: $today
