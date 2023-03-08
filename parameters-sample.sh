@@ -2,6 +2,23 @@
 #
 #===========================================================================#
 #   
+#region | 00.   Functionality
+#
+#   Comment out with <#> tasks to exclude them from executing
+#
+declare -a functionality=(
+    'Local Backup | Home directory'
+    'Local Backup | Docker Volumes'
+    'Local Backup | Docker Bind Mounts'
+    'Cloud Backup'
+    'Daily-backup cleaner'
+    'Daily-backup archiver'
+)
+#
+#endregion
+#
+#===========================================================================#
+#   
 #region | 01.   Declare directories & folders
 #
 #   Local Backup Directory

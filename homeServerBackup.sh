@@ -68,6 +68,20 @@ do
     esac
 done
 #
+declare -a typeChecker=(
+    'instant'
+    'daily'
+    'dev'
+)
+#
+if  [[ ! "${typeChecker[*]}" =~ "${type}" ]]; then
+    echo "usage: $0 [-t] <TYPE (instant/daily)>
+            <instant> used for executing script from terminal
+            <daily> used in 'sudo crontab' for scheduled backups" >&2
+            exit 1
+fi
+#
+#
 #endregion
 #
 #===========================================================================#
@@ -90,7 +104,12 @@ todayDayOfMonth="$(date '+%d')"
 #
 #region | 02.04.        Import parameters
 #
-source parameters.sh
+if [ "$type" == "dev" ]; then
+    source parameters-dev.sh
+    echo "test"
+else
+    source parameters.sh
+fi
 #
 #endregion
 #
@@ -108,17 +127,18 @@ source parameters.sh
 #       Create backup directory
 #       Perform backup
 #       Restart stopped docker container
-#
-declare -n volumeDocker
-for volumeDocker in "${volumeDockers[@]}"; do
-    docker stop "${volumeDocker[container]}" && \
-    mkdir -pv "$backupDir"/"$type"/"$today" && \
-    docker run --rm --volumes-from "${volumeDocker[container]}" \
-    -v "$backupDir"/"$type"/"$today":/backup \
-    ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}" && \
-    docker start "${volumeDocker[container]}" && \
-    echo "== ${volumeDocker[container]} backuped"
-done
+if  [[ "${functionality[*]}" =~ "Local Backup | Docker Volumes" ]]; then
+    declare -n volumeDocker
+    for volumeDocker in "${volumeDockers[@]}"; do
+        docker stop "${volumeDocker[container]}" && \
+        mkdir -pv "$backupDir"/"$type"/"$today" && \
+        docker run --rm --volumes-from "${volumeDocker[container]}" \
+        -v "$backupDir"/"$type"/"$today":/backup \
+        ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}" && \
+        docker start "${volumeDocker[container]}" && \
+        echo "== ${volumeDocker[container]} backuped"
+    done
+fi
 #
 #endregion
 #
@@ -135,14 +155,16 @@ done
 #       Perform backup
 #       Restart stopped docker container
 #
-for container in "${bindDocker[@]}"
-do
-    docker stop "$container" && \
-    mkdir -pv "$backupDir"/"$type"/"$today" && \
-    tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container" && \
-    docker start "$container" && \
-    echo "== $container backuped"
-done
+if  [[ "${functionality[*]}" =~ "Local Backup | Docker Bind Mounts" ]]; then
+    for container in "${bindDocker[@]}"
+    do
+        docker stop "$container" && \
+        mkdir -pv "$backupDir"/"$type"/"$today" && \
+        tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container" && \
+        docker start "$container" && \
+        echo "== $container backuped"
+    done
+fi
 #
 #endregion
 #
@@ -156,8 +178,10 @@ done
 #   Create backup directory
 #   Perform backup
 #
-mkdir -pv "$backupDir"/"$type"/"$today" && \
-tar --exclude="docker" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
+if  [[ "${functionality[*]}" =~ "Local Backup | Home directory" ]]; then
+    mkdir -pv "$backupDir"/"$type"/"$today" && \
+    tar --exclude="docker" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
+fi
 #
 #endregion
 #
@@ -170,13 +194,15 @@ tar --exclude="docker" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$home
 #
 #   Copy daily backup to the Cloud (encrypted)
 #
-docker run --rm \
-    --volume "$homeDir"/docker/rclone/config:/config/rclone \
-    --volume "$homeDir":"$homeDir" \
-    --volume "$backupDir":"$backupDir" \
-    --user "$(id -u)":"$(id -g)" \
-    rclone/rclone \
-    copy --progress "$backupDir"/"$type"/"$today" homeServerBackup:"$type"/"$today"
+if  [[ "${functionality[*]}" =~ "Cloud Backup" ]]; then
+    docker run --rm \
+        --volume "$homeDir"/docker/rclone/config:/config/rclone \
+        --volume "$homeDir":"$homeDir" \
+        --volume "$backupDir":"$backupDir" \
+        --user "$(id -u)":"$(id -g)" \
+        rclone/rclone \
+        copy --progress "$backupDir"/"$type"/"$today" homeServerBackup:"$type"/"$today"
+fi
 #
 #endregion
 #
@@ -191,8 +217,10 @@ docker run --rm \
 #       Delete directiories (backups) older than 4 days
 #       It keeps todays backup + 4 daily earliers
 #
-if [ "$type" == "daily" ]; then
-    find "$backupDir"/"$type"/ -type d -mtime +4 -exec rm -rf "{}" \;
+if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
+    if [ "$type" == "daily" ]; then
+        find "$backupDir"/"$type"/ -type d -mtime +4 -exec rm -rf "{}" \;
+    fi
 fi
 #
 #endregion
@@ -208,9 +236,11 @@ fi
 #        If it's 1st, 11th or 21st day of month:
 #           Copy todays backup to archive
 #
-if [ "$type" == "daily" ]; then
-    if [ "$todayDayOfMonth" -eq 1 ] || [ "$todayDayOfMonth" -eq 11 ] || [ "$todayDayOfMonth" -eq 21 ]; then
-        rsync -r "$backupDir"/"$type"/"$today" "$backupDir"/archive/ 
+if  [[ "${functionality[*]}" =~ "Daily-backup archiver" ]]; then
+    if [ "$type" == "daily" ]; then
+        if [ "$todayDayOfMonth" -eq 1 ] || [ "$todayDayOfMonth" -eq 11 ] || [ "$todayDayOfMonth" -eq 21 ]; then
+            rsync -r "$backupDir"/"$type"/"$today" "$backupDir"/archive/ 
+        fi
     fi
 fi
 #
@@ -229,7 +259,8 @@ endTime="$(date '+%F_%H-%M-%S')"
 #
 #   echo short summary
 #
-echo "==== Backup complete successfully"
+echo "==== Following tasks completed:"
+echo "$functionality"
 echo "==== Start: $today"
 echo "==== End: $endTime"
 #
