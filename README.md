@@ -36,6 +36,7 @@ To execute it, use the following command:\
     `daily` => used in 'sudo crontab' for scheduled backups\
 
 ## Developement checklist
+- [ ] Add Gotify Notyfications [#6] (https://github.com/gromoslaw-kroczka/home-server-backup/issues/6)
 - [ ] Appropriate script description in README.md file [#1](https://github.com/gromoslaw-kroczka/home-server-backup/issues/1)
 - [ ] Conditional messages - depend if script success or not [#2](https://github.com/gromoslaw-kroczka/home-server-backup/issues/2)
 - [ ] Release version to download (in which file format?) [#3](https://github.com/gromoslaw-kroczka/home-server-backup/issues/3)

@@ -61,7 +61,18 @@ declare -x bindDocker=(
 #
 #endregion
 #
-
+#region | 05.   Gotify Configurations
+#
+#   Gotify website + token, for example: https://push.example.de/message?token=<apptoken>
+#
+declare -x GotifyHost="https://push.example.de/message?token=<apptoken>"
+#
+#   Title of Notification
+#
+declare -x GotifyTitle="yourServerName"
+#
+#endregion
+#
 
 
 

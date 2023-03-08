@@ -227,11 +227,15 @@ fi
 #
 endTime="$(date '+%F_%H-%M-%S')"
 #
-#   echo short summary
+#   declare summary message
 #
-echo "==== Backup complete successfully"
-echo "==== Start: $today"
-echo "==== End: $endTime"
+summary="==== Backup complete successfully\n==== Start: $today\n==== End: $endTime"
+#
+echo -e "$summary"
+#
+#   Gotify Summary Notification
+#
+curl "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority=5"
 #
 #endregion
 #
