@@ -106,7 +106,6 @@ todayDayOfMonth="$(date '+%d')"
 #
 if [ "$type" == "dev" ]; then
     source parameters-dev.sh
-    echo "test"
 else
     source parameters.sh
 fi
@@ -265,7 +264,10 @@ echo "$functionality"
 echo "==== Start: $today"
 echo "==== End: $endTime"
 #
-summary="==== Backup complete successfully\n==== Start: $today\n==== End: $endTime"
+summary="Following tasks completed:
+$functionality
+Start: $today
+End: $endTime"
 #
 echo -e "$summary"
 #
