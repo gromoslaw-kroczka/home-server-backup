@@ -16,7 +16,7 @@
 #                       Table of contents                                   #
 #                                                                           #
 #   01.     How to use it                                                   #
-#   02.     Declarations of parameters                                      #
+#   02.     Declarations of parameters & log setting                        #
 #   03.     Local Backup                                                    #
 #   03.01.      Docker Volumes                                              #
 #   03.02.      Docker Bind Mounts                                          #
@@ -51,7 +51,7 @@ fi
 #===========================================================================#
 #===========================================================================#
 #                                                                           #
-#region | 02.       Declarations of parameters                              #
+#region | 02.       Declarations of parameters & log setting                #
 #                                                                           #
 #===========================================================================#
 #
@@ -109,6 +109,18 @@ if [ "$type" == "dev" ]; then
 else
     source parameters.sh
 fi
+#
+#endregion
+#
+#===========================================================================#
+#
+#region | 02.05.        Log settings
+#
+exec 3>&1 4>&2
+trap 'exec 2>&4 1>&3' 0 1 2 3
+exec 1>logs/log_"$type"_"$today".out 2>&1
+#
+# Everything below will go to the log gile file in logs directory
 #
 #endregion
 #
@@ -258,14 +270,14 @@ endTime="$(date '+%F_%H-%M-%S')"
 #
 #   Convert functionalities array to string with newlines after each functionality
 #
-functionalitySummary=$(printf "%s\n" "${functionality[@]}")
+functionalitySummary=$(printf "= %s\n" "${functionality[@]}")
 #
 #   Declare summary message
 #
 summary="Following tasks completed:
 $functionalitySummary
-Start: $today
-End: $endTime"
+Start:  $today
+End:    $endTime"
 #
 echo -e "$summary"
 #
