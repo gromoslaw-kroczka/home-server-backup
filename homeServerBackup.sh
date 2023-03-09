@@ -256,10 +256,14 @@ fi
 #
 endTime="$(date '+%F_%H-%M-%S')"
 #
-#   declare summary message
+#   Convert functionalities array to string with newlines after each functionality
+#
+functionalitySummary=$(printf "%s\n" "${functionality[@]}")
+#
+#   Declare summary message
 #
 summary="Following tasks completed:
-$functionality
+$functionalitySummary
 Start: $today
 End: $endTime"
 #
