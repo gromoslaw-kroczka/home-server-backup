@@ -81,6 +81,9 @@ if  [[ ! "${typeChecker[*]}" =~ "${type}" ]]; then
             exit 1
 fi
 #
+if  [[ "${typeChecker[*]}" =~ 'dev' ]]; then
+    echo "Let's have some fun!"
+fi
 #
 #endregion
 #
@@ -234,6 +237,17 @@ if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
     fi
 fi
 #
+if  [[ "${functionality[*]}" =~ "Daily-backup cloud cleaner" ]]; then
+    docker run --rm \
+        --volume "$homeDir"/docker/rclone/config:/config/rclone \
+        --volume "$homeDir":"$homeDir" \
+        --volume "$backupDir":"$backupDir" \
+        --user "$(id -u)":"$(id -g)" \
+        rclone/rclone \
+        delete homeServerBackup:/ --min-age 4d
+fi
+#
+
 #endregion
 #
 #===========================================================================#

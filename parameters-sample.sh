@@ -13,6 +13,7 @@ declare -a functionality=(
     'Cloud Backup'
     'Daily-backup cleaner'
     'Daily-backup archiver'
+    'Daily-backup cloud cleaner'
 )
 #
 #endregion
