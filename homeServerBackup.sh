@@ -125,6 +125,10 @@ exec 1>logs/log_"$type"_"$today".out 2>&1
 #
 # Everything below will go to the log gile file in logs directory
 #
+echo "=================================================="
+echo "homeServerBackup script launched $today"
+echo "=================================================="
+#
 #endregion
 #
 #===========================================================================#
@@ -134,10 +138,10 @@ exec 1>logs/log_"$type"_"$today".out 2>&1
 # Silence `disk_backlog` notifications during backup
 #
 if [ "$NetdataSilencer" == true ]; then
-    echo "==========" && \
+    echo "==================================================" && \
     sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=SILENCE&context=disk_backlog" -H "X-Auth-Token: $NetdataAuthToken" && \
-    echo "Netdata notifications `disk_backlog` silenced" && \
-    echo "=========="
+    echo "Netdata notifications disk_backlog silenced" && \
+    echo "=================================================="
 fi
 #
 #endregion
@@ -165,7 +169,9 @@ if  [[ "${functionality[*]}" =~ "Local Backup | Docker Volumes" ]]; then
         -v "$backupDir"/"$type"/"$today":/backup \
         ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}" && \
         docker start "${volumeDocker[container]}" && \
-        echo "== ${volumeDocker[container]} Volume backuped"
+        echo "==================================================" && \
+        echo "${volumeDocker[container]} Volume backuped" && \
+        echo "=================================================="
     done
 fi
 #
@@ -192,11 +198,15 @@ if  [[ "${functionality[*]}" =~ "Local Backup | Docker Bind Mounts" ]]; then
             mkdir -pv "$backupDir"/"$type"/"$today" && \
             tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container" && \
             docker start "$container" && \
-            echo "== $container stopped, Bind Mount backuped and restarted"
+            echo "==================================================" && \
+            echo "$container stopped, Bind Mount backuped and restarted" && \
+            echo "=================================================="
         else
             mkdir -pv "$backupDir"/"$type"/"$today" && \
             tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container" && \
-            echo "== $container Bind Mount backuped"
+            echo "==================================================" && \
+            echo "$container Bind Mount backuped" && \
+            echo "=================================================="
         fi
     done
 fi
@@ -216,6 +226,9 @@ fi
 if  [[ "${functionality[*]}" =~ "Local Backup | Home directory" ]]; then
     mkdir -pv "$backupDir"/"$type"/"$today" && \
     tar --exclude="docker" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
+    echo "==================================================" && \
+    echo "$homeDir backuped as $homeName" && \
+    echo "=================================================="
 fi
 #
 #endregion
@@ -236,7 +249,11 @@ if  [[ "${functionality[*]}" =~ "Cloud Backup" ]]; then
         --volume "$backupDir":"$backupDir" \
         --user "$(id -u)":"$(id -g)" \
         rclone/rclone \
-        copy --progress "$backupDir"/"$type"/"$today" homeServerBackup:"$type"/"$today"
+        copy --progress "$backupDir"/"$type"/"$today" homeServerBackup:"$type"/"$today" && \
+        echo "==================================================" && \
+        echo "$backupDir"/"$type"/"$today encrypted and copied to the Cloud" && \
+        echo "=================================================="
+
 fi
 #
 #endregion
@@ -254,7 +271,10 @@ fi
 #
 if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
     if [ "$type" == "daily" ]; then
-        find "$backupDir"/"$type"/ -type d -mtime +4 -exec rm -rf "{}" \;
+        find "$backupDir"/"$type"/ -type d -mtime +4 -exec rm -rf "{}" \; && \
+        echo "==================================================" && \
+        echo "Daily-backup cleaner performed" && \
+        echo "=================================================="
     fi
 fi
 #
@@ -265,7 +285,10 @@ if  [[ "${functionality[*]}" =~ "Daily-backup cloud cleaner" ]]; then
         --volume "$backupDir":"$backupDir" \
         --user "$(id -u)":"$(id -g)" \
         rclone/rclone \
-        delete homeServerBackup:/ --min-age 4d
+        delete homeServerBackup:/ --min-age 4d && \
+        echo "==================================================" && \
+        echo "Daily-backup cloud cleaner performed" && \
+        echo "=================================================="
 fi
 #
 
@@ -285,7 +308,10 @@ fi
 if  [[ "${functionality[*]}" =~ "Daily-backup archiver" ]]; then
     if [ "$type" == "daily" ]; then
         if [ "$todayDayOfMonth" -eq 1 ] || [ "$todayDayOfMonth" -eq 11 ] || [ "$todayDayOfMonth" -eq 21 ]; then
-            rsync -r "$backupDir"/"$type"/"$today" "$backupDir"/archive/ 
+            rsync -r "$backupDir"/"$type"/"$today" "$backupDir"/archive/ && \
+            echo "==================================================" && \
+            echo "Daily-backup archiver performed" && \
+            echo "=================================================="
         fi
     fi
 fi
@@ -302,10 +328,10 @@ fi
 #   Re-enable Netdata alarms
 #
 if [ "$NetdataSilencer" == true ]; then
-    echo "==========" && \
+    echo "==================================================" && \
     sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken" && \
     echo "Netdata notifications reseted" && \
-    echo "=========="
+    echo "=================================================="
 fi
 #
 #   Declare parameter when script've finished 
@@ -321,7 +347,8 @@ functionalitySummary=$(printf "= %s\n" "${functionality[@]}")
 summary="Following tasks completed:
 $functionalitySummary
 Start:  $today
-End:    $endTime"
+End:    $endTime
+=================================================="
 #
 echo -e "$summary"
 #
