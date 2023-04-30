@@ -279,16 +279,18 @@ if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
 fi
 #
 if  [[ "${functionality[*]}" =~ "Daily-backup cloud cleaner" ]]; then
-    docker run --rm \
-        --volume "$homeDir"/docker/rclone/config:/config/rclone \
-        --volume "$homeDir":"$homeDir" \
-        --volume "$backupDir":"$backupDir" \
-        --user "$(id -u)":"$(id -g)" \
-        rclone/rclone \
-        delete homeServerBackup:/ --min-age 4d && \
-        echo "==================================================" && \
-        echo "Daily-backup cloud cleaner performed" && \
-        echo "=================================================="
+    if [ "$type" == "daily" ]; then
+        docker run --rm \
+            --volume "$homeDir"/docker/rclone/config:/config/rclone \
+            --volume "$homeDir":"$homeDir" \
+            --volume "$backupDir":"$backupDir" \
+            --user "$(id -u)":"$(id -g)" \
+            rclone/rclone \
+            delete homeServerBackup:/ --min-age 4d && \
+            echo "==================================================" && \
+            echo "Daily-backup cloud cleaner performed" && \
+            echo "=================================================="
+    fi
 fi
 #
 
