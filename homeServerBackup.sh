@@ -67,22 +67,7 @@ todayDayOfMonth="$(date '+%d')"
 #
 #===========================================================================#
 #
-#region | 02.02.    Log settings
-#
-exec 3>&1 4>&2
-trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1>logs/log_"$type"_"$today".out 2>&1
-#
-#   Everything below will go to the log gile file in logs directory
-echo "=================================================="
-echo "homeServerBackup script launched $today"
-echo "=================================================="
-#
-#endregion
-#
-#===========================================================================#
-#
-#region | 02.03.    Declare type
+#region | 02.02.    'type' parameter
 #
 while getopts t: flag
 do
@@ -111,6 +96,23 @@ fi
 if  [[ "${typeChecker[*]}" =~ 'dev' ]]; then
     echo "Let's have some fun!"
 fi
+#
+#endregion
+#
+#===========================================================================#
+#
+#region | 02.03.    Logs settings
+#
+echo "Logs available in logs/log_"$type"_"$today".out"
+#
+exec 3>&1 4>&2
+trap 'exec 2>&4 1>&3' 0 1 2 3
+exec 1>logs/log_"$type"_"$today".out 2>&1
+#
+#   Everything below will go to the log gile file in logs directory
+echo "=================================================="
+echo "homeServerBackup script launched $today"
+echo "=================================================="
 #
 #endregion
 #
@@ -342,9 +344,9 @@ declare totalDuration="$(($SECONDS/60)) min $(($SECONDS%60)) sec"
 summary="==================================================
 Following tasks completed:
 $functionalitySummary
-Start:          $today
-End:            $endTime
-Total duration: $totalDuration
+Start:              $today
+End:                $endTime
+Total duration:     $totalDuration
 =================================================="
 #
 echo -e "$summary"
