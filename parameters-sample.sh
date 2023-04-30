@@ -41,18 +41,21 @@ declare -x homeName="homeYourNameForExample"
 #       [container]='Container name'
 #       [volumePath]='Path to volume'
 #       [name]='Backup .tar file name'
+#       [stop]=true #or 'false' if you want to backup without stopping the container
 #    )
 #
 declare -x -A volumeDocker00=(
     [container]='1st-container'
     [volumePath]='/path/to/volume'
     [name]='1st-container-backup'
+    [stop]=true
 )
 #
 declare -x -A volumeDocker01=(
     [container]='2nd-container'
     [volumePath]='/path/to/volume'
     [name]='2nd-container-backup'
+    [stop]=false
 )
 #
 #endregion
@@ -119,6 +122,3 @@ declare -x NetdataSilencer=true
 #
 #
 #endregion
-
-
-
