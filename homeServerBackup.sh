@@ -181,10 +181,10 @@ fi
 #===========================================================================#
 #
 #   Loop trought bindDocker array
-#       Stop docker container
+#       Stop docker container (if selected so in parameters)
 #       Create backup directory
 #       Perform backup
-#       Restart stopped docker container
+#       Restart stopped docker container (if previously stopped)
 #
 if  [[ "${functionality[*]}" =~ "Local Backup | Docker Bind Mounts" ]]; then
     for container in "${bindDocker[@]}"

@@ -15,13 +15,21 @@
 [5]: https://github.com/gromoslaw-kroczka/home-server-backup#development-checklist
 
 ## Features
-* Multiple directory backup:
-    * Docker Volumes
-    * Docker Bind Mounts
-    * Server Home Directory
-* Cloud backup using `rclone`
-* Delete old backup files
-* Archive bakcup every 10 days
+* Separate `parameters.sh` file for sensitive data and settings
+* Core functionalities:
+    * Multiple directory local backup:
+        * Docker Volumes
+            * With stopping containers
+        * Docker Bind Mounts
+            * With /or without stopping containers
+        * Server Home Directory
+            * Separated by sub-directiories
+    * Cloud backup using `rclone`
+    * Delete old backup files (both locally & in the Cloud)
+    * Archive locally backup every 10 days
+* Additional functionalities:
+    * Gotify notifications
+    * Netdata notifications silencer during backup
 
 ## Dependencies
 > WORK IN PROGRESS
@@ -39,6 +47,9 @@ To execute it, use the following command:\
 - [X] Functionality chooser
 - [X] `dev` mode [#7](https://github.com/gromoslaw-kroczka/home-server-backup/issues/7)
 - [X] Gotify Notifications [#6](https://github.com/gromoslaw-kroczka/home-server-backup/issues/6)
+- [X] Netdata notification silencer
+- [X] Choose to stop /or not containers during bind mounts backup
+- [X] (?) Choose to stop /or not containers during volume backup
 - [ ] Appropriate script description in README.md file [#1](https://github.com/gromoslaw-kroczka/home-server-backup/issues/1)
 - [ ] Conditional messages - depend if script success or not [#2](https://github.com/gromoslaw-kroczka/home-server-backup/issues/2)
 - [ ] Release version to download (in which file format?) [#3](https://github.com/gromoslaw-kroczka/home-server-backup/issues/3)
