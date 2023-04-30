@@ -165,7 +165,7 @@ if  [[ "${functionality[*]}" =~ "Local Backup | Docker Volumes" ]]; then
         -v "$backupDir"/"$type"/"$today":/backup \
         ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}" && \
         docker start "${volumeDocker[container]}" && \
-        echo "== ${volumeDocker[container]} backuped"
+        echo "== ${volumeDocker[container]} Volume backuped"
     done
 fi
 #
@@ -187,11 +187,17 @@ fi
 if  [[ "${functionality[*]}" =~ "Local Backup | Docker Bind Mounts" ]]; then
     for container in "${bindDocker[@]}"
     do
-        docker stop "$container" && \
-        mkdir -pv "$backupDir"/"$type"/"$today" && \
-        tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container" && \
-        docker start "$container" && \
-        echo "== $container backuped"
+        if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
+            docker stop "$container" && \
+            mkdir -pv "$backupDir"/"$type"/"$today" && \
+            tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container" && \
+            docker start "$container" && \
+            echo "== $container stopped, Bind Mount backuped and restarted"
+        else
+            mkdir -pv "$backupDir"/"$type"/"$today" && \
+            tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container" && \
+            echo "== $container Bind Mount backuped"
+        fi
     done
 fi
 #
