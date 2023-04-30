@@ -77,6 +77,14 @@ declare -x bindDocker=(
     '4th-container'
 )
 #
+#
+#   List of Docker Container with Bind Mounts to stop during backup
+#
+declare -x bindDockerStop=(
+    #'3rd-container'
+    #'4th-container'
+)
+#
 #endregion
 #
 #===========================================================================#
