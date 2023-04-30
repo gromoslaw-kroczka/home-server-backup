@@ -159,15 +159,25 @@ fi
 if  [[ "${functionality[*]}" =~ "Local Backup | Docker Volumes" ]]; then
     declare -n volumeDocker
     for volumeDocker in "${volumeDockers[@]}"; do
-        docker stop "${volumeDocker[container]}" && \
-        mkdir -pv "$backupDir"/"$type"/"$today" && \
-        docker run --rm --volumes-from "${volumeDocker[container]}" \
-        -v "$backupDir"/"$type"/"$today":/backup \
-        ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}" && \
-        docker start "${volumeDocker[container]}" && \
-        echo "==================================================" && \
-        echo "${volumeDocker[container]} Volume backuped" && \
-        echo "=================================================="
+        if [ "${volumeDocker[stop]}" == true ]; then
+            docker stop "${volumeDocker[container]}" && \
+            mkdir -pv "$backupDir"/"$type"/"$today" && \
+            docker run --rm --volumes-from "${volumeDocker[container]}" \
+            -v "$backupDir"/"$type"/"$today":/backup \
+            ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}" && \
+            docker start "${volumeDocker[container]}" && \
+            echo "==================================================" && \
+            echo "${volumeDocker[container]} stopped, Volume backuped and restarted" && \
+            echo "=================================================="
+        else
+            mkdir -pv "$backupDir"/"$type"/"$today" && \
+            docker run --rm --volumes-from "${volumeDocker[container]}" \
+            -v "$backupDir"/"$type"/"$today":/backup \
+            ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}" && \
+            echo "==================================================" && \
+            echo "${volumeDocker[container]} Volume backuped" && \
+            echo "=================================================="
+        fi
     done
 fi
 #
