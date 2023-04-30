@@ -135,12 +135,12 @@ echo "=================================================="
 #
 #region | 02.06.        Netdata silencer
 #
-# Silence `disk_backlog` notifications during backup
+# Disable disk_backlog health check during backup
 #
 if [ "$NetdataSilencer" == true ]; then
     echo "==================================================" && \
-    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=SILENCE&context=disk_backlog" -H "X-Auth-Token: $NetdataAuthToken" && \
-    echo "Netdata notifications disk_backlog silenced" && \
+    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=DISABLE&context=disk_backlog" -H "X-Auth-Token: $NetdataAuthToken" && \
+    echo "Netdata disk_backlog health check disabled" && \
     echo "=================================================="
 fi
 #
@@ -330,7 +330,7 @@ fi
 if [ "$NetdataSilencer" == true ]; then
     echo "==================================================" && \
     sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken" && \
-    echo "Netdata notifications reseted" && \
+    echo "Netdata health check reseted" && \
     echo "=================================================="
 fi
 #
