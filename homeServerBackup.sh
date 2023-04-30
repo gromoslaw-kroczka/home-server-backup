@@ -127,6 +127,18 @@ exec 1>logs/log_"$type"_"$today".out 2>&1
 #
 #endregion
 #
+#===========================================================================#
+#
+#region | 02.06.        Netdata silencer
+#
+# Silence `disk_backlog` notifications during backup
+#
+if [ NetdataSilencer == true ]; then
+    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=SILENCE&context=disk_backlog" -H "X-Auth-Token: $NetdataAuthToken"
+fi
+#
+#endregion
+#
 #endregion
 #
 #===========================================================================#
@@ -277,6 +289,13 @@ fi
 #region | 07.       Script Summary                                          #
 #                                                                           #
 #===========================================================================#
+#
+#   Wait & re-enable Netdata alarms
+#
+if [ NetdataSilencer == true ]; then
+    wait 1m && \
+    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken"
+fi
 #
 #   Declare parameter when script've finished 
 #

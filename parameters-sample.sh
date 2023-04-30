@@ -79,6 +79,8 @@ declare -x bindDocker=(
 #
 #endregion
 #
+#===========================================================================#
+#
 #region | 05.   Gotify Configurations
 #
 #   Gotify website + token, for example: https://push.example.de/message?token=<apptoken>
@@ -91,6 +93,24 @@ declare -x GotifyTitle="yourServerName"
 #
 #endregion
 #
+#===========================================================================#
+#
+#region | 06.   Netdata silencer
+#
+#   Replace <apptoken> with Netdata 'api authorization token'
+#   that is stored in the file you will see in the following entry of http://NODE:19999/netdata.conf:
+#       [registry]
+#           # netdata management api key file = /var/lib/netdata/netdata.api.key
+#
+declare -x NetdataAuthToken="<apptoken>"
+#
+#
+#   #Change to 'false' to disable Netdata silencer
+#
+declare -x NetdataSilencer=true
+#
+#
+#endregion
 
 
 
