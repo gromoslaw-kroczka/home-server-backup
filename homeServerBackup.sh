@@ -55,7 +55,34 @@ fi
 #                                                                           #
 #===========================================================================#
 #
-#region | 02.01.        Declare type
+#region | 02.01.    Time variables
+#
+#   Start time in format YYYY-MM-DD_HH-MM-SS
+today="$(date '+%F_%H-%M-%S')"
+#
+#   Strat time in format DD
+todayDayOfMonth="$(date '+%d')"
+#
+#endregion
+#
+#===========================================================================#
+#
+#region | 02.02.    Log settings
+#
+exec 3>&1 4>&2
+trap 'exec 2>&4 1>&3' 0 1 2 3
+exec 1>logs/log_"$type"_"$today".out 2>&1
+#
+#   Everything below will go to the log gile file in logs directory
+echo "=================================================="
+echo "homeServerBackup script launched $today"
+echo "=================================================="
+#
+#endregion
+#
+#===========================================================================#
+#
+#region | 02.03.    Declare type
 #
 while getopts t: flag
 do
@@ -89,23 +116,7 @@ fi
 #
 #===========================================================================#
 #
-#region | 02.02.        Declare today in format YYYY-MM-DD_HH-MM-SS
-#
-today="$(date '+%F_%H-%M-%S')"
-#
-#endregion
-#
-#===========================================================================#
-#
-#region | 02.03.        Declare today in format DD
-#
-todayDayOfMonth="$(date '+%d')"
-#
-#endregion
-#
-#===========================================================================#
-#
-#region | 02.04.        Import parameters
+#region | 02.04.    Import parameters
 #
 if [ "$type" == "dev" ]; then
     source parameters-dev.sh
@@ -117,26 +128,9 @@ fi
 #
 #===========================================================================#
 #
-#region | 02.05.        Log settings
-#
-exec 3>&1 4>&2
-trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1>logs/log_"$type"_"$today".out 2>&1
-#
-# Everything below will go to the log gile file in logs directory
-#
-echo "=================================================="
-echo "homeServerBackup script launched $today"
-echo "=================================================="
-#
-#endregion
-#
-#===========================================================================#
-#
-#region | 02.06.        Netdata silencer
+#region | 02.05.    Netdata silencer
 #
 # Disable disk_backlog health check during backup
-#
 if [ "$NetdataSilencer" == true ]; then
     echo "==================================================" && \
     sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=DISABLE&context=disk_backlog" -H "X-Auth-Token: $NetdataAuthToken" && \
@@ -328,7 +322,6 @@ fi
 #===========================================================================#
 #
 #   Re-enable Netdata alarms
-#
 if [ "$NetdataSilencer" == true ]; then
     echo "==================================================" && \
     sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken" && \
@@ -336,26 +329,27 @@ if [ "$NetdataSilencer" == true ]; then
     echo "=================================================="
 fi
 #
-#   Declare parameter when script've finished 
-#
-endTime="$(date '+%F_%H-%M-%S')"
-#
 #   Convert functionalities array to string with newlines after each functionality
+declare functionalitySummary=$(printf "= %s\n" "${functionality[@]}")
 #
-functionalitySummary=$(printf "= %s\n" "${functionality[@]}")
+#   Script end time 
+declare endTime="$(date '+%F_%H-%M-%S')"
+#
+#   Total script duration
+declare totalDuration="$(($SECONDS/60)) min $(($SECONDS%60)) sec" 
 #
 #   Declare summary message
-#
-summary="Following tasks completed:
+summary="==================================================
+Following tasks completed:
 $functionalitySummary
-Start:  $today
-End:    $endTime
+Start:          $today
+End:            $endTime
+Total duration: $totalDuration
 =================================================="
 #
 echo -e "$summary"
 #
 #   Gotify Summary Notification
-#
 curl "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority=1"
 #
 #endregion
