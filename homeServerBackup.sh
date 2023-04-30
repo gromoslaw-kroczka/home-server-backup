@@ -133,8 +133,11 @@ exec 1>logs/log_"$type"_"$today".out 2>&1
 #
 # Silence `disk_backlog` notifications during backup
 #
-if [ NetdataSilencer == true ]; then
-    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=SILENCE&context=disk_backlog" -H "X-Auth-Token: $NetdataAuthToken"
+if [ "$NetdataSilencer" == true ]; then
+    echo "==========" && \
+    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=SILENCE&context=disk_backlog" -H "X-Auth-Token: $NetdataAuthToken" && \
+    echo "Netdata notifications `disk_backlog` silenced" && \
+    echo "=========="
 fi
 #
 #endregion
@@ -290,11 +293,13 @@ fi
 #                                                                           #
 #===========================================================================#
 #
-#   Wait & re-enable Netdata alarms
+#   Re-enable Netdata alarms
 #
-if [ NetdataSilencer == true ]; then
-    wait 1m && \
-    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken"
+if [ "$NetdataSilencer" == true ]; then
+    echo "==========" && \
+    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken" && \
+    echo "Netdata notifications reseted" && \
+    echo "=========="
 fi
 #
 #   Declare parameter when script've finished 
@@ -316,7 +321,7 @@ echo -e "$summary"
 #
 #   Gotify Summary Notification
 #
-curl "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority=5"
+curl "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority=1"
 #
 #endregion
 #
