@@ -135,7 +135,7 @@ fi
 # Disable all health notifications during backup
 if [ "$NetdataSilencer" == true ]; then
     echo "==================================================" && \
-    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=SILENCE&context=disk.backlog" -H "X-Auth-Token: $NetdataAuthToken" && \
+    docker exec netdata curl -s "http://localhost:19999/api/v1/manage/health?cmd=SILENCE&context=disk.backlog" -H "X-Auth-Token: $NetdataAuthToken" && \
     echo "Netdata health notifications disabled" && \
     echo "=================================================="
 fi
@@ -336,7 +336,7 @@ fi
 #   Re-enable Netdata alarms
 if [ "$NetdataSilencer" == true ]; then
     echo "==================================================" && \
-    sudo docker exec -it netdata curl "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken" && \
+    docker exec netdata curl -s "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken" && \
     echo "Netdata health check reseted" && \
     echo "=================================================="
 fi
@@ -362,7 +362,7 @@ Total duration:     $totalDuration
 echo -e "$summary"
 #
 #   Gotify Summary Notification
-curl "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority=1"
+curl -s "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority=1"
 #
 #endregion
 #
