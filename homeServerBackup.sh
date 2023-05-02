@@ -38,8 +38,6 @@
 #       <instant> used for executing script from terminal
 #       <daily> used in 'sudo crontab' for scheduled backups
 #
-#   For <instant> backup cleaner [05.] and archiver [06.] is N/A
-#
 #   Check if run as root / sudo
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root / sudo"
@@ -272,10 +270,11 @@ fi
 #                                                                           #
 #===========================================================================#
 #
-#   Execute these commands only for daily backups:
+#   Execute these commands only for <daily> backups:
 #       Delete directiories (backups) older than 4 days
-#       It keeps todays backup + 4 daily earliers
+#       (keep 5 backups: todays + 4 daily earliers)
 #
+#   Local daily cleaner
 if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
     if [ "$type" == "daily" ]; then
         find "$backupDir"/"$type"/ -type d -mtime +4 -exec rm -rf "{}" \;
@@ -285,6 +284,7 @@ if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
     fi
 fi
 #
+#   Cloud daily cleaner
 if  [[ "${functionality[*]}" =~ "Daily-backup cloud cleaner" ]]; then
     if [ "$type" == "daily" ]; then
         docker run --rm \
@@ -293,14 +293,13 @@ if  [[ "${functionality[*]}" =~ "Daily-backup cloud cleaner" ]]; then
             --volume "$backupDir":"$backupDir" \
             --user "$(id -u)":"$(id -g)" \
             rclone/rclone \
-            delete homeServerBackup:/ --min-age 4d
+            delete homeServerBackup:/ --min-age 5d
             echo "========================="
             echo "Daily-backup cloud cleaner performed"
             echo "========================="
     fi
 fi
 #
-
 #endregion
 #
 #===========================================================================#
@@ -314,6 +313,7 @@ fi
 #        If it's 1st, 11th or 21st day of month:
 #           Copy todays backup to archive
 #
+#   Local daily archiver
 if  [[ "${functionality[*]}" =~ "Daily-backup archiver" ]]; then
     if [ "$type" == "daily" ]; then
         if [ "$todayDayOfMonth" -eq 1 ] || [ "$todayDayOfMonth" -eq 11 ] || [ "$todayDayOfMonth" -eq 21 ]; then
