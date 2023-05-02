@@ -58,17 +58,18 @@ fi
 #region | 02.01.    Time variables
 #
 #   Start time in format YYYY-MM-DD_HH-MM-SS
-today="$(date '+%F_%H-%M-%S')"
+declare today="$(date '+%F_%H-%M-%S')"
 #
-#   Strat time in format DD
-todayDayOfMonth="$(date '+%d')"
+#   Start time in format DD
+declare todayDayOfMonth="$(date '+%d')"
 #
 #endregion
 #
 #===========================================================================#
 #
-#region | 02.02.    'type' parameter
+#region | 02.02.    'type' parameter declaration & checker
 #
+#   Require -t TYPE for script execution
 while getopts t: flag
 do
     case "${flag}" in
@@ -80,12 +81,14 @@ do
     esac
 done
 #
+#   List of available TYPES
 declare -a typeChecker=(
     'instant'
     'daily'
     'dev'
 )
 #
+#   Check if TYPE is one of availables TYPES
 if  [[ ! "${typeChecker[*]}" =~ "${type}" ]]; then
     echo "usage: $0 [-t] <TYPE (instant/daily)>
             <instant> used for executing script from terminal
@@ -93,6 +96,7 @@ if  [[ ! "${typeChecker[*]}" =~ "${type}" ]]; then
             exit 1
 fi
 #
+#   Developer mode terminal notification
 if  [[ "${typeChecker[*]}" =~ 'dev' ]]; then
     echo "Let's have some fun!"
 fi
@@ -104,11 +108,9 @@ fi
 #region | 02.03.    Logs settings
 #
 echo "Logs available in logs/log_"$type"_"$today".out"
-#
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
 exec 1>logs/log_"$type"_"$today".out 2>&1
-#
 #   Everything below will go to the log gile file in logs directory
 echo "========================="
 echo "homeServerBackup script launched $today"
@@ -132,7 +134,7 @@ fi
 #
 #region | 02.05.    Netdata silencer
 #
-# Disable all health notifications during backup
+# Disable disk.backlog notifications during backup
 if [ "$NetdataSilencer" == true ]; then
     echo "=========================" && \
     docker exec netdata curl -s "http://localhost:19999/api/v1/manage/health?cmd=SILENCE&context=disk.backlog" -H "X-Auth-Token: $NetdataAuthToken" && \
@@ -152,30 +154,29 @@ fi
 #===========================================================================#
 #
 #   Loop trought volumeDockers Associative Array
-#       Stop docker container
+#       Stop docker container (if selected so in parameters)
 #       Create backup directory
 #       Perform backup
-#       Restart stopped docker container
+#       Restart stopped docker container (if previosuly stopped)
+#
 if  [[ "${functionality[*]}" =~ "Local Backup | Docker Volumes" ]]; then
     declare -n volumeDocker
     for volumeDocker in "${volumeDockers[@]}"; do
         if [ "${volumeDocker[stop]}" == true ]; then
-            docker stop "${volumeDocker[container]}" && \
-            mkdir -pv "$backupDir"/"$type"/"$today" && \
-            docker run --rm --volumes-from "${volumeDocker[container]}" \
-            -v "$backupDir"/"$type"/"$today":/backup \
-            ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}" && \
-            docker start "${volumeDocker[container]}" && \
-            echo "=========================" && \
-            echo "${volumeDocker[container]} stopped, Volume backuped and restarted" && \
+            docker stop "${volumeDocker[container]}"
+        fi
+        mkdir -pv "$backupDir"/"$type"/"$today"
+        docker run --rm --volumes-from "${volumeDocker[container]}" \
+        -v "$backupDir"/"$type"/"$today":/backup \
+        ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}"
+        if [ "${volumeDocker[stop]}" == true ]; then
+            docker start "${volumeDocker[container]}"
+            echo "========================="
+            echo "${volumeDocker[container]} Container stopped, ${volumeDocker[name]} Volume backuped, ${volumeDocker[container]} Container restarted"
             echo "========================="
         else
-            mkdir -pv "$backupDir"/"$type"/"$today" && \
-            docker run --rm --volumes-from "${volumeDocker[container]}" \
-            -v "$backupDir"/"$type"/"$today":/backup \
-            ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}" && \
-            echo "=========================" && \
-            echo "${volumeDocker[container]} Volume backuped" && \
+            echo "========================="
+            echo "${volumeDocker[name]} Volume backuped"
             echo "========================="
         fi
     done
@@ -200,18 +201,18 @@ if  [[ "${functionality[*]}" =~ "Local Backup | Docker Bind Mounts" ]]; then
     for container in "${bindDocker[@]}"
     do
         if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
-            docker stop "$container" && \
-            mkdir -pv "$backupDir"/"$type"/"$today" && \
-            tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container" && \
-            docker start "$container" && \
-            echo "=========================" && \
-            echo "$container stopped, Bind Mount backuped and restarted" && \
+            docker stop "$container"
+        fi
+        mkdir -pv "$backupDir"/"$type"/"$today"
+        tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container"
+        if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
+            docker start "$container"
+            echo "========================="
+            echo "$container Container stopped, $container Bind Mount backuped, $container Container restarted"
             echo "========================="
         else
-            mkdir -pv "$backupDir"/"$type"/"$today" && \
-            tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container" && \
-            echo "=========================" && \
-            echo "$container Bind Mount backuped" && \
+            echo "========================="
+            echo "$container Bind Mount backuped"
             echo "========================="
         fi
     done
@@ -230,10 +231,10 @@ fi
 #   Perform backup
 #
 if  [[ "${functionality[*]}" =~ "Local Backup | Home directory" ]]; then
-    mkdir -pv "$backupDir"/"$type"/"$today" && \
+    mkdir -pv "$backupDir"/"$type"/"$today"
     tar --exclude="docker" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
-    echo "=========================" && \
-    echo "$homeDir backuped as $homeName" && \
+    echo "========================="
+    echo "$homeDir backuped as $homeName"
     echo "========================="
 fi
 #
@@ -255,9 +256,9 @@ if  [[ "${functionality[*]}" =~ "Cloud Backup" ]]; then
         --volume "$backupDir":"$backupDir" \
         --user "$(id -u)":"$(id -g)" \
         rclone/rclone \
-        copy --progress "$backupDir"/"$type"/"$today" homeServerBackup:"$type"/"$today" && \
-        echo "=========================" && \
-        echo "$backupDir"/"$type"/"$today encrypted and copied to the Cloud" && \
+        copy --progress "$backupDir"/"$type"/"$today" homeServerBackup:"$type"/"$today"
+        echo "========================="
+        echo "$backupDir"/"$type"/"$today encrypted and copied to the Cloud"
         echo "========================="
 
 fi
@@ -277,9 +278,9 @@ fi
 #
 if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
     if [ "$type" == "daily" ]; then
-        find "$backupDir"/"$type"/ -type d -mtime +4 -exec rm -rf "{}" \; && \
-        echo "=========================" && \
-        echo "Daily-backup cleaner performed" && \
+        find "$backupDir"/"$type"/ -type d -mtime +4 -exec rm -rf "{}" \;
+        echo "========================="
+        echo "Daily-backup cleaner performed"
         echo "========================="
     fi
 fi
@@ -292,9 +293,9 @@ if  [[ "${functionality[*]}" =~ "Daily-backup cloud cleaner" ]]; then
             --volume "$backupDir":"$backupDir" \
             --user "$(id -u)":"$(id -g)" \
             rclone/rclone \
-            delete homeServerBackup:/ --min-age 4d && \
-            echo "=========================" && \
-            echo "Daily-backup cloud cleaner performed" && \
+            delete homeServerBackup:/ --min-age 4d
+            echo "========================="
+            echo "Daily-backup cloud cleaner performed"
             echo "========================="
     fi
 fi
@@ -316,9 +317,9 @@ fi
 if  [[ "${functionality[*]}" =~ "Daily-backup archiver" ]]; then
     if [ "$type" == "daily" ]; then
         if [ "$todayDayOfMonth" -eq 1 ] || [ "$todayDayOfMonth" -eq 11 ] || [ "$todayDayOfMonth" -eq 21 ]; then
-            rsync -r "$backupDir"/"$type"/"$today" "$backupDir"/archive/ && \
-            echo "=========================" && \
-            echo "Daily-backup archiver performed" && \
+            rsync -r "$backupDir"/"$type"/"$today" "$backupDir"/archive/
+            echo "========================="
+            echo "Daily-backup archiver performed"
             echo "========================="
         fi
     fi
@@ -335,9 +336,9 @@ fi
 #
 #   Re-enable Netdata alarms
 if [ "$NetdataSilencer" == true ]; then
-    echo "=========================" && \
-    docker exec netdata curl -s "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken" && \
-    echo "Netdata health check reseted" && \
+    echo "========================="
+    docker exec netdata curl -s "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: $NetdataAuthToken"
+    echo "Netdata health check reseted"
     echo "========================="
 fi
 #
@@ -351,7 +352,7 @@ declare endTime="$(date '+%F_%H-%M-%S')"
 declare totalDuration="$(($SECONDS/60)) min $(($SECONDS%60)) sec" 
 #
 #   Declare summary message
-summary="=========================
+declare summary="=========================
 Following tasks completed:
 $functionalitySummary
 Start:              $today
@@ -362,6 +363,7 @@ Total duration:     $totalDuration
 echo -e "$summary"
 #
 #   Gotify Summary Notification
+echo "Gotify Notification: "
 curl -s "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority=1"
 #
 #endregion
