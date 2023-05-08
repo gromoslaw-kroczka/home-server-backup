@@ -4,7 +4,7 @@
 #   
 #region | 00.   Functionality
 #
-#   Comment out with <#> tasks to exclude them from executing
+#   Comment out with <#> features to exclude them from executing
 declare -a functionality=(
     'Local Backup | Home directory'
     'Local Backup | Docker Volumes'
@@ -19,7 +19,7 @@ declare -a functionality=(
 #
 #===========================================================================#
 #   
-#region | 01.   Declare directories & folders
+#region | 01.   Directories & folders
 #
 #   Local Backup Directory
 declare -x backupDir="path/to/location/where/backup/will/be/stored"
@@ -34,7 +34,7 @@ declare -x homeName="homeYourNameForExample"
 #
 #===========================================================================#
 #
-#region | 02.   Declare Arrays of Docker Containers
+#region | 02.   Arrays of Docker Containers
 #
 #   declare -A volumeDocker00=(
 #       [container]='Container name'
@@ -61,7 +61,7 @@ declare -x -A volumeDocker01=(
 #
 #===========================================================================#
 # 
-#region | 03.   Declare Associative Array
+#region | 03.   Associative Array
 #
 declare -x -a volumeDockers=(
     'volumeDocker00'
