@@ -48,30 +48,30 @@ File  | Description
 
 ## How to use it
 1. Clone GitHub repository to you server
-2. Make core script executable\
+2. Make core script executable
     ```shell
     $ chmod u+x homeServerBackup.sh
     ```
-3. Execute it\
-```shell
-$ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>
-```
-    `instant` => used for executing script from terminal\
-    `daily` => used in 'sudo crontab' for scheduled backups\
+3. Execute it
+    ```shell
+    $ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>
+    ```
+        `instant` => used for executing script from terminal\
+        `daily` => used in 'sudo crontab' for scheduled backups\
 4. For scheduled backups add above line as cronjob (preferebly with 'daily' type)
-    1. Open crontab\
-    ```shell
-    $ sudo crontab -e
-    ```
+    1. Open crontab
+        ```shell
+        $ sudo crontab -e
+        ```
     2. Add scheduled script execution\
-        For example below code with execute script located in <example directory> everyday at 2:00 am.\
-    ```shell
-    * 2 * * * cd /<example directory> && ./homeServerBackup.sh -t daily
-    ```
-        To set up cron schedule expressions see [crontab gutu][crontab]\
+        For example below code with execute script located in <example directory> everyday at 2:00 am.
+        ```shell
+        * 2 * * * cd /<example directory> && ./homeServerBackup.sh -t daily
+         ```
+        To set up cron schedule expressions see [crontab gutu][crontab]
 
 ## Configuration
-> :exclamation: Before changing any settings / parameters copy `parameters-sample.sh` file and remove `-sample` part of the name\
+> :exclamation: Before changing any settings / parameters copy `parameters-sample.sh` file and remove `-sample` part of the name.
 ```shell
 $ cp parameters-sample.sh parameters.sh
 ```
@@ -108,7 +108,7 @@ declare -x homeName="homeYourNameForExample"
 ```
 
 ### 02. Arrays of Docker Containers
-Set up details of your Docker Volumes you would like to backup.
+Set up details of your Docker Volumes you would like to backup
 ```shell
 #   declare -A volumeDocker00=(
 #       [container]='Container name'
@@ -157,7 +157,7 @@ declare -x bindDockerStop=(
 ```
 
 ### 05. Gotify Configurations
-Set up Gotify server to notify you after each backup.
+Set up Gotify server to notify you after each backup
 ```shell
 #   Gotify website + token, for example: https://push.example.de/message?token=<apptoken>
 declare -x GotifyHost="https://push.example.de/message?token=<apptoken>"
