@@ -49,22 +49,30 @@ File  | Description
 ## How to use it
 1. Clone GitHub repository to you server
 2. Make core script executable\
-    `$ chmod u+x homeServerBackup.sh`
+    ```shell
+    $ chmod u+x homeServerBackup.sh
+    ```
 3. Execute it\
 `$ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>`\
     `instant` => used for executing script from terminal\
     `daily` => used in 'sudo crontab' for scheduled backups\
 4. For scheduled backups add above line as cronjob (preferebly with 'daily' type)
     1. Open crontab\
-        `$ sudo crontab -e`
+    ```shell
+    $ sudo crontab -e
+    ```
     2. Add scheduled script execution\
-        Below code with execute script located in <example directory> everyday at 2:00 am.\
-        To set up cron schedule expressions see [crontab gutu][crontab]
-    `* 2 * * * cd /<example directory> && ./homeServerBackup.sh -t daily`
+        For example below code with execute script located in <example directory> everyday at 2:00 am.\
+    ```shell
+    * 2 * * * cd /<example directory> && ./homeServerBackup.sh -t daily
+    ```
+        To set up cron schedule expressions see [crontab gutu][crontab]\
 
 ## Configuration
 > :exclamation: Before changing any settings / parameters copy `parameters-sample.sh` file and remove `-sample` part of the name\
-`$ cp parameters-sample.sh parameters.sh`
+```shell
+$ cp parameters-sample.sh parameters.sh
+```
 
 ### 00. Functionality
 Comment out (with <#>) features to exclude them from executing
@@ -80,7 +88,7 @@ declare -a functionality=(
 )
 ```
 To run Docker Volumes & Bind Mounts backups you need Docker environment.\
-To run Cloud Backup you have to have installed [rclone][rclone] and remote configured
+To run Cloud Backup you have to have installed [rclone][rclone] and remote configured (named as *homeServerBackup*)
 
 ### 01. Directories & folders
 Set up your:
