@@ -33,16 +33,8 @@
 #                                                                           #
 #===========================================================================#
 #
-#   To execute it, use the following command:
-#   $ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>
-#       <instant> used for executing script from terminal
-#       <daily> used in 'sudo crontab' for scheduled backups
-#
-#   Check if run as root / sudo
-if [ "$EUID" -ne 0 ]
-  then echo "Please run as root / sudo"
-  exit
-fi
+#   Everything in the README.md (link below)
+#   https://github.com/gromoslaw-kroczka/home-server-backup#how-to-use-it
 #
 #endregion
 #
@@ -65,7 +57,13 @@ declare todayDayOfMonth="$(date '+%d')"
 #
 #===========================================================================#
 #
-#region | 02.02.    'type' parameter declaration & checker
+#region | 02.02.    'sudo' checker & 'type' parameter declaration & checker
+#
+#   Check if run as root / sudo
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root / sudo"
+  exit
+fi
 #
 #   Require -t TYPE for script execution
 while getopts t: flag
