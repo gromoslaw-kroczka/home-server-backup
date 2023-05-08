@@ -53,7 +53,9 @@ File  | Description
     $ chmod u+x homeServerBackup.sh
     ```
 3. Execute it\
-`$ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>`\
+```shell
+$ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>
+```
     `instant` => used for executing script from terminal\
     `daily` => used in 'sudo crontab' for scheduled backups\
 4. For scheduled backups add above line as cronjob (preferebly with 'daily' type)
