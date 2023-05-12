@@ -107,6 +107,16 @@ declare -x homeDir="/your/home/directory"
 declare -x homeName="homeYourNameForExample"
 ```
 
+To exclude certain sub-directories of Home directory just add it to the array:
+```shell
+#   Exclude those homeDir sub-directories from backup
+declare -x -a excludeDir=(
+    'photos'                #exclude homeDir/photos
+    'folder/sub-folder'     #exclude homeDir/folder/sub-folder
+)
+```
+
+
 ### 02. Arrays of Docker Containers
 Set up details of your Docker Volumes you would like to backup
 ```shell
@@ -196,8 +206,9 @@ If you would like to silende Netdata backlog notification not only for the time 
 - [X] Gotify Notifications [#6][issue_06]
 - [X] Netdata notification silencer
 - [X] Choose to stop /or not containers during bind mounts backup
-- [X] (?) Choose to stop /or not containers during volume backup
+- [X] Choose to stop /or not containers during volume backup
 - [X] Appropriate script description in README.md file [#1][issue_01]
+- [X] Exclude sub-directories of Home directory from backup [#20][issue_20]
 - [ ] Conditional messages - depend if script success or not [#2][issue_02]
 - [ ] Release version to download (in which file format?) [#3][issue_03]
 - [ ] Clean up configuration of Docker Volumes [#18][issue_18]
@@ -217,3 +228,4 @@ If you would like to silende Netdata backlog notification not only for the time 
 [issue_06]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/6
 [issue_07]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/7
 [issue_18]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/18
+[issue_20]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/20

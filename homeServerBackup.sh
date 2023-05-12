@@ -228,7 +228,7 @@ fi
 #
 if  [[ "${functionality[*]}" =~ "Local Backup | Home directory" ]]; then
     mkdir -pv "$backupDir"/"$type"/"$today"
-    tar --exclude="docker" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
+    tar --exclude="docker" "${excludeDir[@]/#/--exclude=}" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
     echo "========================="
     echo "$homeDir backuped as $homeName"
     echo "========================="
