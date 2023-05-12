@@ -30,6 +30,12 @@ declare -x homeDir="/your/home/directory"
 #   Name for backup of Server Home Directory
 declare -x homeName="homeYourNameForExample"
 #
+#   Exclude those homeDir sub-directories from backup
+declare -x -a excludeDir=(
+    'photos'                #exclude homeDir/photos
+    'folder/sub-folder'     #exclude homeDir/folder/sub-folder
+)
+#
 #endregion
 #
 #===========================================================================#
