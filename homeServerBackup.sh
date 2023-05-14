@@ -316,13 +316,13 @@ fi
 #===========================================================================#
 #
 #   Execute these commands only for <daily> backups:
-#       Delete directiories (backups) older than 4 days
-#       (keep 5 backups: todays + 4 daily earliers)
+#       Delete older directiories (backups)
+#       (as specified in parameters.sh)
 #
 #   Local daily cleaner
 if [ "$type" == "daily" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
-            find "$backupDir"/"$type"/ -type d -mtime +4 -exec rm -rf "{}" \;
+            find "$backupDir"/"$type"/ -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
             echo "========================="
             echo "Daily-backup cleaner performed"
             echo "========================="
@@ -338,7 +338,7 @@ if [ "$type" == "daily" ]; then
             --volume "$backupDir":"$backupDir" \
             --user "$(id -u)":"$(id -g)" \
             rclone/rclone \
-            delete homeServerBackup:/ --min-age 5d
+            delete homeServerBackup:/ --min-age "$dailyCloud"d
             echo "========================="
             echo "Daily-backup cloud cleaner performed"
             echo "========================="

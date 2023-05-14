@@ -2,7 +2,7 @@
 #
 #===========================================================================#
 #   
-#region | 00.   Functionality
+#region | 00.   Functionality and basic settings
 #
 #   Comment out with <#> features to exclude them from executing
 declare -x -a functionality=(
@@ -14,6 +14,10 @@ declare -x -a functionality=(
     'Daily-backup cloud cleaner'
     'Daily-backup archiver'
 )
+#
+#   Choose how many daily backups you want to keep (daily-cleaner settings)
+declare -x -i dailyLocal=5
+declare -x -i dailyCloud=5
 #
 #endregion
 #
