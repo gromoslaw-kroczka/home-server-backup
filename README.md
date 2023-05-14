@@ -91,7 +91,13 @@ declare -a functionality=(
 ```
 To run Docker Volumes & Bind Mounts backups you need Docker environment.\
 To run Cloud Backup you have to have installed [rclone][rclone] and remote configured (named as *homeServerBackup*)
-
+For Daily-backup local and cloud cleaners you can specify how many backups you want to preserve
+```shell
+#   Choose how many daily backups you want to keep (daily-cleaner settings)
+declare -x -i dailyLocal=5
+declare -x -i dailyCloud=5
+#
+```
 ### 01. Directories & folders
 Set up your:
 * Backup Directory - local destination of backups
