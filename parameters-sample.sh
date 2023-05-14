@@ -5,7 +5,7 @@
 #region | 00.   Functionality
 #
 #   Comment out with <#> features to exclude them from executing
-declare -a functionality=(
+declare -x -a functionality=(
     'Local Backup | Home directory'
     'Local Backup | Docker Volumes'
     'Local Backup | Docker Bind Mounts'
@@ -80,13 +80,13 @@ declare -x -a volumeDockers=(
 #
 #region | 04.   List od Docker Containers with Bind Mounts
 #
-declare -x bindDocker=(
+declare -x -a bindDocker=(
     '3rd-container'
     '4th-container'
 )
 #
 #   List of Docker Container with Bind Mounts to stop during backup
-declare -x bindDockerStop=(
+declare -x -a bindDockerStop=(
     #'3rd-container'
     #'4th-container'
 )
