@@ -17,14 +17,15 @@
 #                                                                           #
 #   01.     How to use it                                                   #
 #   02.     Declarations of parameters & log setting                        #
-#   03.     Local Backup                                                    #
-#   03.01.      Docker Volumes                                              #
-#   03.02.      Docker Bind Mounts                                          #
-#   03.02.      Home directory                                              #
-#   04.     Cloud Backup                                                    #
-#   05.     Daily-backup cleaner                                            #
-#   06.     Daily-backup archiver                                           #
-#   07.     Script summary                                                  #
+#   03.     Backups cleaner                                                 #
+#   04.     Local Backup                                                    #
+#   04.01.      Docker Volumes                                              #
+#   04.02.      Docker Bind Mounts                                          #
+#   04.02.      Home directory                                              #
+#   05.     Cloud Backup                                                    #
+#   06.     Daily-backup cleaner                                            #
+#   07.     Daily-backup archiver                                           #
+#   08.     Script summary                                                  #
 #                                                                           #
 #===========================================================================#
 #===========================================================================#
@@ -82,13 +83,15 @@ declare -a typeChecker=(
     'instant'
     'daily'
     'dev'
+    'cleaner'
 )
 #
 #   Check if TYPE is one of availables TYPES
 if  [[ ! "${typeChecker[*]}" =~ "${type}" ]]; then
     echo "usage: $0 [-t] <TYPE (instant/daily)>
             <instant> used for executing script from terminal
-            <daily> used in 'sudo crontab' for scheduled backups" >&2
+            <daily> used in 'sudo crontab' for scheduled backups
+            <cleaner> used to delete old backups" >&2
             exit 1
 fi
 #
@@ -145,7 +148,43 @@ fi
 #===========================================================================#
 #===========================================================================#
 #                                                                           #
-#region | 03.01.    Local Backup | Docker Volumes                           #
+#region | 03        Backups cleaner                                         #
+#                                                                           #
+#===========================================================================#
+#
+#   Execute these commands only for <cleaner> option:
+#       Delete all of non-daily & non-archive local backups
+#       Delete all of non-daily cloud backups
+#
+if [ "$type" == "cleaner" ]; then
+    #   Local backups cleaner
+    cd "$backupDir"/
+    find . \( -path ./daily -prune -o -path ./archive -prune \) -o -type d -exec rm -rf "{}" \;
+    echo "========================="
+    echo "Old backups cleaner (local) performed"
+    echo "========================="
+fi
+#
+#   Cloud backups cleaner
+if [ "$type" == "cleaner" ]; then
+    docker run --rm \
+        --volume "$homeDir"/docker/rclone/config:/config/rclone \
+        --volume "$homeDir":"$homeDir" \
+        --volume "$backupDir":"$backupDir" \
+        --user "$(id -u)":"$(id -g)" \
+        rclone/rclone \
+        delete homeServerBackup:/ --exclude /daily/**
+        echo "========================="
+        echo "Old backups cleaner (cloud) cleaner performed"
+        echo "========================="
+fi
+#
+#endregion
+#
+#===========================================================================#
+#===========================================================================#
+#                                                                           #
+#region | 04.01.    Local Backup | Docker Volumes                           #
 #                                                                           #
 #===========================================================================#
 #
@@ -155,27 +194,29 @@ fi
 #       Perform backup
 #       Restart stopped docker container (if previosuly stopped)
 #
-if  [[ "${functionality[*]}" =~ "Local Backup | Docker Volumes" ]]; then
-    declare -n volumeDocker
-    for volumeDocker in "${volumeDockers[@]}"; do
-        if [ "${volumeDocker[stop]}" == true ]; then
-            docker stop "${volumeDocker[container]}"
-        fi
-        mkdir -pv "$backupDir"/"$type"/"$today"
-        docker run --rm --volumes-from "${volumeDocker[container]}" \
-        -v "$backupDir"/"$type"/"$today":/backup \
-        ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}"
-        if [ "${volumeDocker[stop]}" == true ]; then
-            docker start "${volumeDocker[container]}"
-            echo "========================="
-            echo "${volumeDocker[container]} Container stopped, ${volumeDocker[name]} Volume backuped, ${volumeDocker[container]} Container restarted"
-            echo "========================="
-        else
-            echo "========================="
-            echo "${volumeDocker[name]} Volume backuped"
-            echo "========================="
-        fi
-    done
+if [ "$type" != "cleaner" ]; then
+    if  [[ "${functionality[*]}" =~ "Local Backup | Docker Volumes" ]]; then
+        declare -n volumeDocker
+        for volumeDocker in "${volumeDockers[@]}"; do
+            if [ "${volumeDocker[stop]}" == true ]; then
+                docker stop "${volumeDocker[container]}"
+            fi
+            mkdir -pv "$backupDir"/"$type"/"$today"
+            docker run --rm --volumes-from "${volumeDocker[container]}" \
+            -v "$backupDir"/"$type"/"$today":/backup \
+            ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}"
+            if [ "${volumeDocker[stop]}" == true ]; then
+                docker start "${volumeDocker[container]}"
+                echo "========================="
+                echo "${volumeDocker[container]} Container stopped, ${volumeDocker[name]} Volume backuped, ${volumeDocker[container]} Container restarted"
+                echo "========================="
+            else
+                echo "========================="
+                echo "${volumeDocker[name]} Volume backuped"
+                echo "========================="
+            fi
+        done
+    fi
 fi
 #
 #endregion
@@ -183,7 +224,7 @@ fi
 #===========================================================================#
 #===========================================================================#
 #                                                                           #
-#region | 03.02.    Local Backup | Docker Bind Mounts                       #
+#region | 04.02.    Local Backup | Docker Bind Mounts                       #
 #                                                                           #
 #===========================================================================#
 #
@@ -193,25 +234,27 @@ fi
 #       Perform backup
 #       Restart stopped docker container (if previously stopped)
 #
-if  [[ "${functionality[*]}" =~ "Local Backup | Docker Bind Mounts" ]]; then
-    for container in "${bindDocker[@]}"
-    do
-        if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
-            docker stop "$container"
-        fi
-        mkdir -pv "$backupDir"/"$type"/"$today"
-        tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container"
-        if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
-            docker start "$container"
-            echo "========================="
-            echo "$container Container stopped, $container Bind Mount backuped, $container Container restarted"
-            echo "========================="
-        else
-            echo "========================="
-            echo "$container Bind Mount backuped"
-            echo "========================="
-        fi
-    done
+if [ "$type" != "cleaner" ]; then
+    if  [[ "${functionality[*]}" =~ "Local Backup | Docker Bind Mounts" ]]; then
+        for container in "${bindDocker[@]}"
+        do
+            if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
+                docker stop "$container"
+            fi
+            mkdir -pv "$backupDir"/"$type"/"$today"
+            tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container"
+            if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
+                docker start "$container"
+                echo "========================="
+                echo "$container Container stopped, $container Bind Mount backuped, $container Container restarted"
+                echo "========================="
+            else
+                echo "========================="
+                echo "$container Bind Mount backuped"
+                echo "========================="
+            fi
+        done
+    fi
 fi
 #
 #endregion
@@ -219,19 +262,21 @@ fi
 #===========================================================================#
 #===========================================================================#
 #                                                                           #
-#region | 03.03.    Local Backup | Home directory                           #
+#region | 04.03.    Local Backup | Home directory                           #
 #                                                                           #
 #===========================================================================#
 #
 #   Create backup directory
 #   Perform backup
 #
-if  [[ "${functionality[*]}" =~ "Local Backup | Home directory" ]]; then
-    mkdir -pv "$backupDir"/"$type"/"$today"
-    tar --exclude="docker" "${excludeDir[@]/#/--exclude=}" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
-    echo "========================="
-    echo "$homeDir backuped as $homeName"
-    echo "========================="
+if [ "$type" != "cleaner" ]; then
+    if  [[ "${functionality[*]}" =~ "Local Backup | Home directory" ]]; then
+        mkdir -pv "$backupDir"/"$type"/"$today"
+        tar --exclude="docker" "${excludeDir[@]/#/--exclude=}" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
+        echo "========================="
+        echo "$homeDir backuped as $homeName"
+        echo "========================="
+    fi
 fi
 #
 #endregion
@@ -239,24 +284,26 @@ fi
 #===========================================================================#
 #===========================================================================#
 #                                                                           #
-#region | 04.       Cloud Backup                                            #
+#region | 05.       Cloud Backup                                            #
 #                                                                           #
 #===========================================================================#
 #
-#   Copy daily backup to the Cloud (encrypted)
+#   Copy backup to the Cloud (encrypted)
 #
-if  [[ "${functionality[*]}" =~ "Cloud Backup" ]]; then
-    docker run --rm \
-        --volume "$homeDir"/docker/rclone/config:/config/rclone \
-        --volume "$homeDir":"$homeDir" \
-        --volume "$backupDir":"$backupDir" \
-        --user "$(id -u)":"$(id -g)" \
-        rclone/rclone \
-        copy --progress "$backupDir"/"$type"/"$today" homeServerBackup:"$type"/"$today"
-        echo "========================="
-        echo "$backupDir"/"$type"/"$today encrypted and copied to the Cloud"
-        echo "========================="
+if [ "$type" != "cleaner" ]; then
+    if  [[ "${functionality[*]}" =~ "Cloud Backup" ]]; then
+        docker run --rm \
+            --volume "$homeDir"/docker/rclone/config:/config/rclone \
+            --volume "$homeDir":"$homeDir" \
+            --volume "$backupDir":"$backupDir" \
+            --user "$(id -u)":"$(id -g)" \
+            rclone/rclone \
+            copy --progress "$backupDir"/"$type"/"$today" homeServerBackup:"$type"/"$today"
+            echo "========================="
+            echo "$backupDir"/"$type"/"$today encrypted and copied to the Cloud"
+            echo "========================="
 
+    fi
 fi
 #
 #endregion
@@ -264,7 +311,7 @@ fi
 #===========================================================================#
 #===========================================================================#
 #                                                                           #
-#region | 05.       Daily-backup cleaner                                    #
+#region | 06.       Daily-backup cleaner                                    #
 #                                                                           #
 #===========================================================================#
 #
@@ -273,18 +320,18 @@ fi
 #       (as specified in parameters.sh)
 #
 #   Local daily cleaner
-if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
-    if [ "$type" == "daily" ]; then
-        find "$backupDir"/"$type"/ -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
-        echo "========================="
-        echo "Daily-backup cleaner performed"
-        echo "========================="
+if [ "$type" == "daily" ]; then
+    if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
+            find "$backupDir"/"$type"/ -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
+            echo "========================="
+            echo "Daily-backup cleaner performed"
+            echo "========================="
     fi
 fi
 #
 #   Cloud daily cleaner
-if  [[ "${functionality[*]}" =~ "Daily-backup cloud cleaner" ]]; then
-    if [ "$type" == "daily" ]; then
+if [ "$type" == "daily" ]; then
+    if  [[ "${functionality[*]}" =~ "Daily-backup cloud cleaner" ]]; then
         docker run --rm \
             --volume "$homeDir"/docker/rclone/config:/config/rclone \
             --volume "$homeDir":"$homeDir" \
@@ -303,7 +350,7 @@ fi
 #===========================================================================#
 #===========================================================================#
 #                                                                           #
-#region | 06.       Daily-backup archiver                                   #
+#region | 07.       Daily-backup archiver                                   #
 #                                                                           #
 #===========================================================================#
 #
@@ -312,8 +359,8 @@ fi
 #           Copy todays backup to archive
 #
 #   Local daily archiver
-if  [[ "${functionality[*]}" =~ "Daily-backup archiver" ]]; then
-    if [ "$type" == "daily" ]; then
+if [ "$type" == "daily" ]; then
+    if  [[ "${functionality[*]}" =~ "Daily-backup archiver" ]]; then
         if [ "$todayDayOfMonth" -eq 1 ] || [ "$todayDayOfMonth" -eq 11 ] || [ "$todayDayOfMonth" -eq 21 ]; then
             rsync -r "$backupDir"/"$type"/"$today" "$backupDir"/archive/
             echo "========================="
@@ -328,7 +375,7 @@ fi
 #===========================================================================#
 #===========================================================================#
 #                                                                           #
-#region | 07.       Script Summary                                          #
+#region | 08.       Script Summary                                          #
 #                                                                           #
 #===========================================================================#
 #
