@@ -13,14 +13,6 @@ Have fun :rocket:
 * [Files descriptions][3]
 * [How to use it][4]
 * [Configuration][5]
-    * [00. Functionality][5.00]
-    * [01. Directories & folders][5.01]
-    * [02. Arrays of Docker Containers][5.02]
-    * [03. Associative Array][5.03]
-    * [04. List od Docker Containers with Bind Mounts][5.04]
-    * [05. Gotify Configurations][5.05]
-    * [06. Netdata silencer][5.06]
-
 
 ## Features
 * Separate `parameters.sh` file for settings & sensitive data
@@ -82,6 +74,13 @@ File  | Description
         To set up cron schedule expressions see [crontab gutu][crontab]
 
 ## Configuration
+* [00. Functionality][5.00]
+* [01. Directories & folders][5.01]
+* [02. Arrays of Docker Containers][5.02]
+* [03. Associative Array][5.03]
+* [04. List od Docker Containers with Bind Mounts][5.04]
+* [05. Gotify Configurations][5.05]
+* [06. Netdata silencer][5.06]
 
 ### 00. Functionality
 Comment out (with <#>) features to exclude them from executingin 'instant' backups
