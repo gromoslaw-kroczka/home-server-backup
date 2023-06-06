@@ -82,7 +82,6 @@ done
 declare -a typeChecker=(
     'instant'
     'daily'
-    'dev'
     'cleaner'
 )
 #
@@ -93,11 +92,6 @@ if  [[ ! "${typeChecker[*]}" =~ "${type}" ]]; then
             <daily> used in 'sudo crontab' for scheduled backups
             <cleaner> used to delete old backups" >&2
             exit 1
-fi
-#
-#   Developer mode terminal notification
-if  [[ "${typeChecker[*]}" =~ 'dev' ]]; then
-    echo "Let's have some fun!"
 fi
 #
 #endregion
@@ -121,10 +115,18 @@ echo "========================="
 #
 #region | 02.04.    Import parameters
 #
-if [ "$type" == "dev" ]; then
-    source parameters-dev.sh
-else
-    source parameters.sh
+source parameters.sh
+#
+#   Declare 'funcionality' array and assaign to it valuse
+#   from (...)Daily or (...)Instant array from 'parameters.sh'
+#   depend on the type of script execution
+#
+declare -a functionality
+#
+if [ "$type" == "daily" ]; then
+    functionality=("${functionalityDaily[@]}")
+else 
+    functionality=("${functionalityInstant[@]}")
 fi
 #
 #endregion
@@ -315,12 +317,14 @@ fi
 #                                                                           #
 #===========================================================================#
 #
-#   Execute these commands only for <daily> backups:
-#       Delete older directiories (backups)
-#       (as specified in parameters.sh)
+#   Delete older directiories (backups)
+#   (as specified in parameters.sh)
+#
+#   (!) It is advised to execute these commands only for <daily> backups
+#   (see '00.Functionality and basic settings' in 'parameters.sh')
 #
 #   Local daily cleaner
-if [ "$type" == "daily" ]; then
+if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
             find "$backupDir"/"$type"/ -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
             echo "========================="
@@ -330,7 +334,7 @@ if [ "$type" == "daily" ]; then
 fi
 #
 #   Cloud daily cleaner
-if [ "$type" == "daily" ]; then
+if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup cloud cleaner" ]]; then
         docker run --rm \
             --volume "$homeDir"/docker/rclone/config:/config/rclone \
@@ -354,12 +358,14 @@ fi
 #                                                                           #
 #===========================================================================#
 #
-#   Execute these commands only for daily backups:
-#        If it's 1st, 11th or 21st day of month:
-#           Copy todays backup to archive
+#   If it's 1st, 11th or 21st day of month:
+#       Copy todays backup to archive
+#   
+#   (!) It is advised to execute these commands only for <daily> backups
+#   (see '00.Functionality and basic settings' in 'parameters.sh')
 #
 #   Local daily archiver
-if [ "$type" == "daily" ]; then
+if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup archiver" ]]; then
         if [ "$todayDayOfMonth" -eq 1 ] || [ "$todayDayOfMonth" -eq 11 ] || [ "$todayDayOfMonth" -eq 21 ]; then
             rsync -r "$backupDir"/"$type"/"$today" "$backupDir"/archive/
