@@ -1,4 +1,4 @@
-<p align="center">
+<p align="center" style="font-size: 20px;">
   Multi-purpose <b>Backup script</b> dedicated for <b>Home Servers</b>
 </p>
 
@@ -19,18 +19,16 @@ Have fun :rocket:
 * Separate `parameters.sh` file for settings & sensitive data
 * Core functionalities:
     * Multiple directory local backup:
-        * Docker Volumes
-            * With stopping containers
-        * Docker Bind Mounts
-            * With /or without stopping containers
-        * Server Home Directory
-            * Separated by sub-directiories
+        * Docker Volumes | With stopping containers
+        * Docker Bind Mounts | With /or without stopping containers
+        * Server Home Directory | Separated by sub-directiories
     * Cloud backup using `rclone`
     * Delete old backup files (both locally & in the Cloud)
     * Archive locally backup every 10 days
 * Additional functionalities:
     * Gotify notifications
     * Netdata notifications silencer during backup
+    * Separate 'instant' type to test choosen features
 
 ## Prequisitions and Dependencies
 * Linux environment (to execute bash script)
@@ -52,7 +50,12 @@ File  | Description
     ```shell
     $ chmod u+x homeServerBackup.sh
     ```
-3. Execute it
+3. Configurate parameters
+> :exclamation: Before changing any settings / parameters copy `parameters-sample.sh` file and remove `-sample` part of the name.
+```shell
+$ cp parameters-sample.sh parameters.sh
+```
+3. Execute script
     ```shell
     $ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>
     ```
@@ -70,16 +73,21 @@ File  | Description
          ```
         To set up cron schedule expressions see [crontab gutu][crontab]
 
-## Configuration
-> :exclamation: Before changing any settings / parameters copy `parameters-sample.sh` file and remove `-sample` part of the name.
-```shell
-$ cp parameters-sample.sh parameters.sh
-```
-
 ### 00. Functionality
-Comment out (with <#>) features to exclude them from executing
+Comment out (with <#>) features to exclude them from executingin 'instant' backups
 ```shell
-declare -a functionality=(
+declare -x -a functionalityInstant=(
+    'Local Backup | Home directory'
+    'Local Backup | Docker Volumes'
+    'Local Backup | Docker Bind Mounts'
+    'Cloud Backup'
+    # (!) It is advised to use below features only for 'daily' backups
+    #'Daily-backup cleaner'
+    #'Daily-backup cloud cleaner'
+    #'Daily-backup archiver'
+)
+#
+declare -x -a functionalityDaily=(
     'Local Backup | Home directory'
     'Local Backup | Docker Volumes'
     'Local Backup | Docker Bind Mounts'
@@ -206,19 +214,6 @@ If you would like to silende Netdata backlog notification not only for the time 
 0 3 * * * docker exec netdata curl -s "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: <apptoken>"
 ```
 
-## Developement checklist
-- [X] Functionality chooser
-- [X] `dev` mode [#7][issue_07]
-- [X] Gotify Notifications [#6][issue_06]
-- [X] Netdata notification silencer
-- [X] Choose to stop /or not containers during bind mounts backup
-- [X] Choose to stop /or not containers during volume backup
-- [X] Appropriate script description in README.md file [#1][issue_01]
-- [X] Exclude sub-directories of Home directory from backup [#20][issue_20]
-- [ ] Conditional messages - depend if script success or not [#2][issue_02]
-- [ ] Release version to download (in which file format?) [#3][issue_03]
-- [ ] Clean up configuration of Docker Volumes [#18][issue_18]
-
 [1]: https://github.com/gromoslaw-kroczka/home-server-backup#features
 [2]: https://github.com/gromoslaw-kroczka/home-server-backup#Prequisitions-and-dependencies
 [3]: https://github.com/gromoslaw-kroczka/home-server-backup#files-descriptions
@@ -228,10 +223,3 @@ If you would like to silende Netdata backlog notification not only for the time 
 [schellCheck]: https://www.shellcheck.net/
 [crontab]: https://crontab.guru/
 [rclone]: https://github.com/rclone/rclone
-[issue_01]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/1
-[issue_02]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/2
-[issue_03]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/3
-[issue_06]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/6
-[issue_07]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/7
-[issue_18]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/18
-[issue_20]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/20
