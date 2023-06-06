@@ -4,8 +4,20 @@
 #   
 #region | 00.   Functionality and basic settings
 #
-#   Comment out with <#> features to exclude them from executing
-declare -x -a functionality=(
+#   Comment out with <#> features to exclude them from executing in 'instant' backups
+declare -x -a functionalityInstant=(
+    'Local Backup | Home directory'
+    'Local Backup | Docker Volumes'
+    'Local Backup | Docker Bind Mounts'
+    'Cloud Backup'
+    # (!) It is advised to use below features only for 'daily' backups
+    #'Daily-backup cleaner'
+    #'Daily-backup cloud cleaner'
+    #'Daily-backup archiver'
+)
+#
+#   Comment out with <#> features to exclude them from executing in 'daily' backups
+declare -x -a functionalityDaily=(
     'Local Backup | Home directory'
     'Local Backup | Docker Volumes'
     'Local Backup | Docker Bind Mounts'
