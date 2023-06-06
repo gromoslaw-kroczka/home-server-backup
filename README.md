@@ -13,13 +13,13 @@ Have fun :rocket:
 * [Files descriptions][3]
 * [How to use it][4]
 * [Configuration][5]
-    * 00. [Functionality][5.00]
-    * 01. [Directories & folders][5.01]
-    * 02. [Arrays of Docker Containers][5.02]
-    * 03. [Associative Array][5.03]
-    * 04. [List od Docker Containers with Bind Mounts][5.04]
-    * 05. [Gotify Configurations][5.05]
-    * 06. [Netdata silencer][5.06]
+    * [00. Functionality][5.00]
+    * [01. Directories & folders][5.01]
+    * [02. Arrays of Docker Containers][5.02]
+    * [03. Associative Array][5.03]
+    * [04. List od Docker Containers with Bind Mounts][5.04]
+    * [05. Gotify Configurations][5.05]
+    * [06. Netdata silencer][5.06]
 
 
 ## Features
@@ -57,7 +57,7 @@ File  | Description
     ```shell
     $ chmod u+x homeServerBackup.sh
     ```
-3. Configurate parameters
+3. Configurate parameters\
     (!) Before changing any settings / parameters copy `parameters-sample.sh` file and remove `-sample` part of the name.
     ```shell
     $ cp parameters-sample.sh parameters.sh
@@ -67,8 +67,8 @@ File  | Description
     ```shell
     $ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>
     ```
-        `instant` => used for executing script from terminal\
-        `daily` => used in 'sudo crontab' for scheduled backups\
+        `instant` => used for executing script from terminal
+        `daily` => used in 'sudo crontab' for scheduled backups
 4. For scheduled backups add above line as cronjob (preferebly with 'daily' type)
     1. Open crontab
         ```shell
@@ -223,6 +223,9 @@ If you would like to silende Netdata backlog notification not only for the time 
 0 3 * * * docker exec netdata curl -s "http://localhost:19999/api/v1/manage/health?cmd=RESET" -H "X-Auth-Token: <apptoken>"
 ```
 
+## License
+`home-server-backup` is distributed under the GNU General Public License version 3.0 license. See LICENSE for more details.
+
 [1]: https://github.com/gromoslaw-kroczka/home-server-backup#features
 [2]: https://github.com/gromoslaw-kroczka/home-server-backup#Prequisitions-and-dependencies
 [3]: https://github.com/gromoslaw-kroczka/home-server-backup#files-descriptions
@@ -238,3 +241,4 @@ If you would like to silende Netdata backlog notification not only for the time 
 [schellCheck]: https://www.shellcheck.net/
 [crontab]: https://crontab.guru/
 [rclone]: https://github.com/rclone/rclone
+[issue_18]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/18
