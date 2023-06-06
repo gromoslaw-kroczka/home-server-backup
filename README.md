@@ -1,4 +1,4 @@
-<p align="center" style="font-size: 20px;">
+<p align="center">
   Multi-purpose <b>Backup script</b> dedicated for <b>Home Servers</b>
 </p>
 
@@ -13,7 +13,14 @@ Have fun :rocket:
 * [Files descriptions][3]
 * [How to use it][4]
 * [Configuration][5]
-* [Developement checklists][6]
+    * 00. [Functionality][5.00]
+    * 01. [Directories & folders][5.01]
+    * 02. [Arrays of Docker Containers][5.02]
+    * 03. [Associative Array][5.03]
+    * 04. [List od Docker Containers with Bind Mounts][5.04]
+    * 05. [Gotify Configurations][5.05]
+    * 06. [Netdata silencer][5.06]
+
 
 ## Features
 * Separate `parameters.sh` file for settings & sensitive data
@@ -51,10 +58,11 @@ File  | Description
     $ chmod u+x homeServerBackup.sh
     ```
 3. Configurate parameters
-> :exclamation: Before changing any settings / parameters copy `parameters-sample.sh` file and remove `-sample` part of the name.
-```shell
-$ cp parameters-sample.sh parameters.sh
-```
+    (!) Before changing any settings / parameters copy `parameters-sample.sh` file and remove `-sample` part of the name.
+    ```shell
+    $ cp parameters-sample.sh parameters.sh
+    ```
+    Complete configuration of script acc. [Configuration][5]
 3. Execute script
     ```shell
     $ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>
@@ -72,6 +80,8 @@ $ cp parameters-sample.sh parameters.sh
         * 2 * * * cd /<example directory> && ./homeServerBackup.sh -t daily
          ```
         To set up cron schedule expressions see [crontab gutu][crontab]
+
+## Configuration
 
 ### 00. Functionality
 Comment out (with <#>) features to exclude them from executingin 'instant' backups
@@ -129,7 +139,6 @@ declare -x -a excludeDir=(
     'folder/sub-folder'     #exclude homeDir/folder/sub-folder
 )
 ```
-
 
 ### 02. Arrays of Docker Containers
 Set up details of your Docker Volumes you would like to backup
@@ -219,7 +228,13 @@ If you would like to silende Netdata backlog notification not only for the time 
 [3]: https://github.com/gromoslaw-kroczka/home-server-backup#files-descriptions
 [4]: https://github.com/gromoslaw-kroczka/home-server-backup#how-to-use-it
 [5]: https://github.com/gromoslaw-kroczka/home-server-backup#configuration
-[6]: https://github.com/gromoslaw-kroczka/home-server-backup#development-checklist
+[5.00]: https://github.com/gromoslaw-kroczka/home-server-backup#00-functionality
+[5.01]: https://github.com/gromoslaw-kroczka/home-server-backup#01-directories--folders
+[5.02]: https://github.com/gromoslaw-kroczka/home-server-backup#02-arrays-of-docker-containers
+[5.03]: https://github.com/gromoslaw-kroczka/home-server-backup#03-associative-array
+[5.04]: https://github.com/gromoslaw-kroczka/home-server-backup#04-list-od-docker-containers-with-bind-mounts
+[5.05]: https://github.com/gromoslaw-kroczka/home-server-backup#05-gotify-configurations
+[5.06]: https://github.com/gromoslaw-kroczka/home-server-backup#06-netdata-silencer
 [schellCheck]: https://www.shellcheck.net/
 [crontab]: https://crontab.guru/
 [rclone]: https://github.com/rclone/rclone
