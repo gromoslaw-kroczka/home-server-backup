@@ -6,10 +6,10 @@
 #
 #   Comment out with <#> features to exclude them from executing in 'instant' backups
 declare -x -a functionalityInstant=(
-    #'Local Backup | Home directory'
+    'Local Backup | Home directory'
     'Local Backup | Docker Volumes'
-    #'Local Backup | Docker Bind Mounts'
-    #'Cloud Backup'
+    'Local Backup | Docker Bind Mounts'
+    'Cloud Backup'
     # (!) It is advised to use below features only for 'daily' backups
     #'Daily-backup cleaner'
     #'Daily-backup cloud cleaner'
