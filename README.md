@@ -77,10 +77,9 @@ File  | Description
 * [00. Functionality][5.00]
 * [01. Directories & folders][5.01]
 * [02. Arrays of Docker Containers][5.02]
-* [03. Associative Array][5.03]
-* [04. List od Docker Containers with Bind Mounts][5.04]
-* [05. Gotify Configurations][5.05]
-* [06. Netdata silencer][5.06]
+* [03. List od Docker Containers with Bind Mounts][5.03]
+* [04. Gotify Configurations][5.04]
+* [05. Netdata silencer][5.05]
 
 ### 00. Functionality
 Comment out (with <#>) features to exclude them from executingin 'instant' backups
@@ -164,16 +163,7 @@ declare -x -A volumeDocker01=(
 )
 ```
 
-### 03. Associative Array
-Expend list of docker volumes to correspond with number of your Docker Volumes. This part of the settings will be moved to *core* code in the future. See [Issue #18][issue_18]
-```shell
-declare -x -a volumeDockers=(
-    'volumeDocker00'
-    'volumeDocker01'
-)
-```
-
-### 04. List od Docker Containers with Bind Mounts
+### 03. List od Docker Containers with Bind Mounts
 Set up you Docker Containers of which you would like to backup Bind Mounts. Code assume that you have Bind Mounts located in directory `homeDir/Docker/<container name>`. For each of the Docker Container you can choose whether to stop during backup or not.
 ```shell
 declare -x bindDocker=(
@@ -188,7 +178,7 @@ declare -x bindDockerStop=(
 )
 ```
 
-### 05. Gotify Configurations
+### 04. Gotify Configurations
 Set up Gotify server to notify you after each backup
 ```shell
 #   Gotify website + token, for example: https://push.example.de/message?token=<apptoken>
@@ -198,7 +188,7 @@ declare -x GotifyHost="https://push.example.de/message?token=<apptoken>"
 declare -x GotifyTitle="yourServerName"
 ```
 
-### 06. Netdata silencer
+### 05. Netdata silencer
 Backup of the server could couse high disk backlog and therefore *spam* notifications from Netdata about it (if you have that tool installed on the server). You can disable those notifications for the time of the backup script.
 ```shell
 #   Replace <apptoken> with Netdata 'api authorization token'
@@ -233,10 +223,9 @@ If you would like to silende Netdata backlog notification not only for the time 
 [5.00]: https://github.com/gromoslaw-kroczka/home-server-backup#00-functionality
 [5.01]: https://github.com/gromoslaw-kroczka/home-server-backup#01-directories--folders
 [5.02]: https://github.com/gromoslaw-kroczka/home-server-backup#02-arrays-of-docker-containers
-[5.03]: https://github.com/gromoslaw-kroczka/home-server-backup#03-associative-array
-[5.04]: https://github.com/gromoslaw-kroczka/home-server-backup#04-list-od-docker-containers-with-bind-mounts
-[5.05]: https://github.com/gromoslaw-kroczka/home-server-backup#05-gotify-configurations
-[5.06]: https://github.com/gromoslaw-kroczka/home-server-backup#06-netdata-silencer
+[5.03]: https://github.com/gromoslaw-kroczka/home-server-backup#04-list-od-docker-containers-with-bind-mounts
+[5.04]: https://github.com/gromoslaw-kroczka/home-server-backup#05-gotify-configurations
+[5.05]: https://github.com/gromoslaw-kroczka/home-server-backup#06-netdata-silencer
 [schellCheck]: https://www.shellcheck.net/
 [crontab]: https://crontab.guru/
 [rclone]: https://github.com/rclone/rclone
