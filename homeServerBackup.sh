@@ -206,7 +206,7 @@ fi
 if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Local Backup | Docker Volumes" ]]; then
         declare -n volumeDocker
-        for volumeDocker in "${volumeDockers[@]}"; do
+        for volumeDocker in ${!volumeDocker@}; do
             if [ "${volumeDocker[stop]}" == true ]; then
                 docker stop "${volumeDocker[container]}"
             fi

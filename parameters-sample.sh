@@ -82,19 +82,8 @@ declare -x -A volumeDocker01=(
 #endregion
 #
 #===========================================================================#
-# 
-#region | 03.   Associative Array
 #
-declare -x -a volumeDockers=(
-    'volumeDocker00'
-    'volumeDocker01'
-)
-#
-#endregion
-#
-#===========================================================================#
-#
-#region | 04.   List od Docker Containers with Bind Mounts
+#region | 03.   List od Docker Containers with Bind Mounts
 #
 declare -x -a bindDocker=(
     '3rd-container'
@@ -111,7 +100,7 @@ declare -x -a bindDockerStop=(
 #
 #===========================================================================#
 #
-#region | 05.   Gotify Configurations
+#region | 04.   Gotify Configurations
 #
 #   Gotify website + token, for example: https://push.example.de/message?token=<apptoken>
 declare -x GotifyHost="https://push.example.de/message?token=<apptoken>"
@@ -123,7 +112,7 @@ declare -x GotifyTitle="yourServerName"
 #
 #===========================================================================#
 #
-#region | 06.   Netdata silencer
+#region | 05.   Netdata silencer
 #
 #   Replace <apptoken> with Netdata 'api authorization token'
 #   that is stored in the file you will see in the following entry of http://NODE:19999/netdata.conf:
