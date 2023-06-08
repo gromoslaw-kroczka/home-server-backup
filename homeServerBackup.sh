@@ -176,9 +176,16 @@ if [ "$type" == "cleaner" ]; then
         --user "$(id -u)":"$(id -g)" \
         rclone/rclone \
         delete homeServerBackup:/ --exclude /daily/**
-        echo "========================="
-        echo "Old backups cleaner (cloud) cleaner performed"
-        echo "========================="
+    docker run --rm \
+        --volume "$homeDir"/docker/rclone/config:/config/rclone \
+        --volume "$homeDir":"$homeDir" \
+        --volume "$backupDir":"$backupDir" \
+        --user "$(id -u)":"$(id -g)" \
+        rclone/rclone \
+        rmdirs homeServerBackup:/ --leave-root
+    echo "========================="
+    echo "Old backups cleaner (cloud) cleaner performed"
+    echo "========================="
 fi
 #
 #endregion
@@ -326,7 +333,7 @@ fi
 #   Local daily cleaner
 if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
-            find "$backupDir"/"$type"/ -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
+            find "$backupDir"/daily/ -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
             echo "========================="
             echo "Daily-backup cleaner performed"
             echo "========================="
@@ -342,10 +349,17 @@ if [ "$type" != "cleaner" ]; then
             --volume "$backupDir":"$backupDir" \
             --user "$(id -u)":"$(id -g)" \
             rclone/rclone \
-            delete homeServerBackup:/ --min-age "$dailyCloud"d
-            echo "========================="
-            echo "Daily-backup cloud cleaner performed"
-            echo "========================="
+            delete homeServerBackup:/daily/ --min-age "$dailyCloud"d
+        docker run --rm \
+            --volume "$homeDir"/docker/rclone/config:/config/rclone \
+            --volume "$homeDir":"$homeDir" \
+            --volume "$backupDir":"$backupDir" \
+            --user "$(id -u)":"$(id -g)" \
+            rclone/rclone \
+            rmdirs homeServerBackup:/ --leave-root
+        echo "========================="
+        echo "Daily-backup cloud cleaner performed"
+        echo "========================="
     fi
 fi
 #
@@ -368,7 +382,7 @@ fi
 if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup archiver" ]]; then
         if [ "$todayDayOfMonth" -eq 1 ] || [ "$todayDayOfMonth" -eq 11 ] || [ "$todayDayOfMonth" -eq 21 ]; then
-            rsync -r "$backupDir"/"$type"/"$today" "$backupDir"/archive/
+            rsync -r "$backupDir"/daily/"$today" "$backupDir"/archive/
             echo "========================="
             echo "Daily-backup archiver performed"
             echo "========================="
