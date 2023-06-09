@@ -100,7 +100,7 @@ fi
 #
 #region | 02.03.    Logs settings
 #
-echo "Logs available in logs/log_"$type"_"$today".out"
+echo "Logs available in logs/log_""$type""_""$today"".out"
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
 exec 1>logs/log_"$type"_"$today".out 2>&1
@@ -414,7 +414,7 @@ declare functionalitySummary=$(printf "= %s\n" "${functionality[@]}")
 declare endTime="$(date '+%F_%H-%M-%S')"
 #
 #   Total script duration
-declare totalDuration="$(($SECONDS/60)) min $(($SECONDS%60)) sec" 
+declare totalDuration="$((SECONDS/60)) min $((SECONDS%60)) sec" 
 #
 #   Declare summary message
 declare summary="=========================
