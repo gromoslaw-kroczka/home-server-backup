@@ -70,10 +70,11 @@ fi
 while getopts t: flag
 do
     case "${flag}" in
-        t) type=${OPTARG};;
-        *) echo "usage: $0 [-t] <TYPE (instant/daily)>
-            <instant> used for executing script from terminal
-            <daily> used in 'sudo crontab' for scheduled backups" >&2
+        t)  type=${OPTARG};;
+        *)  echo "usage: $0 [-t] <TYPE (instant/daily)>
+                <instant> used for executing script from terminal
+                <daily> used in 'sudo crontab' for scheduled backups
+                <cleaner> used to delete old backups" >&2
             exit 1 ;;
     esac
 done
@@ -91,7 +92,7 @@ if  [[ ! "${typeChecker[*]}" =~ "${type}" ]]; then
             <instant> used for executing script from terminal
             <daily> used in 'sudo crontab' for scheduled backups
             <cleaner> used to delete old backups" >&2
-            exit 1
+    exit 1
 fi
 #
 #endregion

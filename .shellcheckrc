@@ -6,3 +6,7 @@
 # Allow shellcheck to access other files
 # https://www.shellcheck.net/wiki/Directive#external-sources
 external-sources=true
+
+# Disable specific error codes
+# https://www.shellcheck.net/wiki/Ignore
+disable=SC2076
