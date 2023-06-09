@@ -9,4 +9,4 @@ external-sources=true
 
 # Disable specific error codes
 # https://www.shellcheck.net/wiki/Ignore
-disable=SC2076
+disable=SC2076,SC2155
