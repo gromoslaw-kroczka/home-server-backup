@@ -160,7 +160,7 @@ fi
 #
 if [ "$type" == "cleaner" ]; then
     #   Local backups cleaner
-    cd "$backupDir"/
+    cd "$backupDir"/ || { echo "Cannot cd into $backupDir"; exit 1; }
     find . \( -path ./daily -prune -o -path ./archive -prune \) -o -type d -exec rm -rf "{}" \;
     echo "========================="
     echo "Old backups cleaner (local) performed"
