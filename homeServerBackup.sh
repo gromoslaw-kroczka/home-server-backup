@@ -114,7 +114,7 @@ echo "========================="
 #
 #===========================================================================#
 #
-#region | 02.04.    Import parameters
+#region | 02.04.    Import parameters & exit codes declarations
 #
 source parameters.sh
 #
@@ -129,6 +129,17 @@ if [ "$type" == "daily" ]; then
 else 
     functionality=("${functionalityInstant[@]}")
 fi
+#
+declare -A exitCode=(
+    [localBackupHomeDirectory]=0
+    [localBackupDockerVolumes]=0
+    [localBackupDockerBindMounts]=0
+    [cloudBackup]=0
+    [localBackupsCleaner]=0
+    [cloudBackupsCleanerFiles]=0
+    [cloudBackupsCleanerFolder]=0
+    [daily-backupArchiver]=0
+)
 #
 #endregion
 #
@@ -163,9 +174,17 @@ if [ "$type" == "cleaner" ]; then
     #   Local backups cleaner
     cd "$backupDir"/ || { echo "Cannot cd into $backupDir"; exit 1; }
     find . \( -path ./daily -prune -o -path ./archive -prune \) -o -type d -exec rm -rf "{}" \;
-    echo "========================="
-    echo "Old backups cleaner (local) performed"
-    echo "========================="
+    exitCode[localBackupsCleaner]=$?
+    if [ "${exitCode[localBackupsCleaner]}" -eq 0 ]; then
+        echo "========================="
+        echo "Old backups cleaner (local) performed"
+        echo "========================="
+    else
+        echo "#########################"
+        echo "(!) Error during local backups cleaner (!)"
+        echo "#########################"
+    fi
+
 fi
 #
 #   Cloud backups cleaner
@@ -177,6 +196,7 @@ if [ "$type" == "cleaner" ]; then
         --user "$(id -u)":"$(id -g)" \
         rclone/rclone \
         delete homeServerBackup:/ --exclude /daily/**
+    exitCode[cloudBackupsCleanerFiles]=$?
     docker run --rm \
         --volume "$homeDir"/docker/rclone/config:/config/rclone \
         --volume "$homeDir":"$homeDir" \
@@ -184,9 +204,16 @@ if [ "$type" == "cleaner" ]; then
         --user "$(id -u)":"$(id -g)" \
         rclone/rclone \
         rmdirs homeServerBackup:/ --leave-root
-    echo "========================="
-    echo "Old backups cleaner (cloud) cleaner performed"
-    echo "========================="
+    exitCode[cloudBackupsCleanerFolders]=$?
+    if [ "${exitCode[cloudBackupsCleanerFiles]}" -eq 0 ] && [ "${exitCode[cloudBackupsCleanerFolders]}" -eq 0 ]; then
+        echo "========================="
+        echo "Old backups cleaner (cloud) cleaner performed"
+        echo "========================="
+    else
+        echo "#########################"
+        echo "(!) Error during cloud backups cleaner (!)"
+        echo "#########################"
+    fi
 fi
 #
 #endregion
@@ -212,19 +239,28 @@ if [ "$type" != "cleaner" ]; then
                 docker stop "${volumeDocker[container]}"
             fi
             mkdir -pv "$backupDir"/"$type"/"$today"
-            docker run --rm --volumes-from "${volumeDocker[container]}" \
-            -v "$backupDir"/"$type"/"$today":/backup \
-            ubuntu tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}"
-            if [ "${volumeDocker[stop]}" == true ]; then
-                docker start "${volumeDocker[container]}"
-                echo "========================="
-                echo "${volumeDocker[container]} Container stopped, ${volumeDocker[name]} Volume backuped, ${volumeDocker[container]} Container restarted"
-                echo "========================="
-            else
-                echo "========================="
-                echo "${volumeDocker[name]} Volume backuped"
-                echo "========================="
-            fi
+            docker run --rm \
+                --volumes-from "${volumeDocker[container]}" \
+                -v "$backupDir"/"$type"/"$today":/backup \
+                ubuntu \
+                tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}"
+                declare localBackupDockerVolumes=$?
+                if [ $localBackupDockerVolumes -eq 0 ]; then
+                    if [ "${volumeDocker[stop]}" == true ]; then
+                        docker start "${volumeDocker[container]}"
+                        echo "========================="
+                        echo "${volumeDocker[container]} Container stopped, ${volumeDocker[name]} Volume backuped, ${volumeDocker[container]} Container restarted"
+                        echo "========================="
+                    else
+                        echo "========================="
+                        echo "${volumeDocker[name]} Volume backuped"
+                        echo "========================="
+                    fi
+                else
+                    echo "#########################"
+                    echo "(!) Error during local backup of docker volumes (!)"
+                    echo "#########################"
+                fi            
         done
     fi
 fi
@@ -253,16 +289,23 @@ if [ "$type" != "cleaner" ]; then
             fi
             mkdir -pv "$backupDir"/"$type"/"$today"
             tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container"
-            if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
-                docker start "$container"
-                echo "========================="
-                echo "$container Container stopped, $container Bind Mount backuped, $container Container restarted"
-                echo "========================="
+            declare localBackupDockerBindMounts=$?
+            if [ $localBackupDockerBindMounts -eq 0 ]; then
+                if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
+                    docker start "$container"
+                    echo "========================="
+                    echo "$container Container stopped, $container Bind Mount backuped, $container Container restarted"
+                    echo "========================="
+                else
+                    echo "========================="
+                    echo "$container Bind Mount backuped"
+                    echo "========================="
+                fi
             else
-                echo "========================="
-                echo "$container Bind Mount backuped"
-                echo "========================="
-            fi
+                echo "#########################"
+                echo "(!) Error during local backup of docker bind mounts (!)"
+                echo "#########################"
+            fi  
         done
     fi
 fi
@@ -283,9 +326,16 @@ if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Local Backup | Home directory" ]]; then
         mkdir -pv "$backupDir"/"$type"/"$today"
         tar --exclude="docker" "${excludeDir[@]/#/--exclude=}" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
-        echo "========================="
-        echo "$homeDir backuped as $homeName"
-        echo "========================="
+        declare localBackupHomeDirectory=$?
+        if [ $localBackupHomeDirectory -eq 0 ]; then
+            echo "========================="
+            echo "$homeDir backuped as $homeName"
+            echo "========================="
+        else
+            echo "#########################"
+            echo "(!) Error during local backup of home directory (!)"
+            echo "#########################"
+        fi
     fi
 fi
 #
