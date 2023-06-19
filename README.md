@@ -28,6 +28,8 @@ Have fun :rocket:
     * Gotify notifications
     * Netdata notifications silencer during backup
     * Separate 'instant' type to test choosen features
+    * 'cleaner' mode to quickly purge needless 'instant' backups
+    * Built-in conditional messages based on exit codes
 
 ## Prequisitions and Dependencies
 * Linux environment (to execute bash script)
@@ -42,6 +44,10 @@ File  | Description
 `.shellcheckrc` | [ShellCheck][shellCheck] configuration file
 `README.md` | documentation file
 `LICENSE.md` | open source license details
+`CODE_OF_CONDUCT.md` | [community code of conduct][code_of_conduct]
+`CONTRIBUTING.md` | contribution guidelines
+`SECURITY.md` | security guidelines
+`.github/ISSUE_TEMPLATE` | templates for bug reports, feature requests & other issues
 
 ## How to use it
 1. Clone GitHub repository to you server
@@ -57,10 +63,11 @@ File  | Description
     Complete configuration of script acc. [Configuration][5]
 3. Execute script
     ```shell
-    $ sudo ./homeServerBackup.sh -t <TYPE (instant/daily)>
+    $ sudo ./homeServerBackup.sh -t <TYPE (instant/daily/cleaner)>
     ```
         `instant` => used for executing script from terminal
         `daily` => used in 'sudo crontab' for scheduled backups
+        `cleaner` => remove all instant backups from local & cloud directories
 4. For scheduled backups add above line as cronjob (preferebly with 'daily' type)
     1. Open crontab
         ```shell
@@ -230,3 +237,4 @@ If you would like to silende Netdata backlog notification not only for the time 
 [crontab]: https://crontab.guru/
 [rclone]: https://github.com/rclone/rclone
 [issue_18]: https://github.com/gromoslaw-kroczka/home-server-backup/issues/18
+[code_of_conduct]: https://opensource.guide/code-of-conduct/
