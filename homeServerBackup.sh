@@ -328,7 +328,7 @@ fi
 if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Local Backup | Home directory" ]]; then
         mkdir -pv "$backupDir"/"$type"/"$today"
-        tar --exclude="docker" "${excludeDir[@]/#/--exclude=}" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
+        tar --exclude="logs/log_""$type""_""$today"".out" --exclude="docker" "${excludeDir[@]/#/--exclude=}" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
         exitCode[localBackupHomeDirectory]=$?
         if [ "${exitCode[localBackupHomeDirectory]}" -eq 0 ]; then
             echo "========================="
@@ -504,13 +504,14 @@ fi
 declare exitCodes=0
 for value in "${exitCode[@]}"; do
     # Multiply the current value with the result
-    ((exitCodes *= value))
+    ((exitCodes += value))
 done
 
 #
 if [ "$type" != "cleaner" ]; then
     if [ "$exitCodes" -eq 0 ]; then
-        functionalitySummary="Backup completed \n$(printf "= %s\n" "${functionality[@]}")"
+        functionalitySummary="homeServerBackup completed
+$(printf "= %s\n" "${functionality[@]}")"
     else
         functionalitySummary="(!) Error during backup - details available in logs/log_""$type""_""$today"".out (!)"
     fi
@@ -536,6 +537,13 @@ echo -e "$summary"
 echo "Gotify Notification: "
 curl -s "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority=1"
 #
+#   Debug log data
+echo -e "\n\nexitCodes SUM (qty of errors) = $value"
+echo "exitCode values:"
+for key in "${!exitCode[@]}"; do
+    echo "exitCode: ${exitCode[$key]} => $key"
+done
+#
 #endregion
 #
 #===========================================================================#
@@ -545,9 +553,3 @@ curl -s "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority
 #                                                                           #
 #===========================================================================#
 #===========================================================================#
-# TEST
-for key in "${!exitCode[@]}"; do
-    echo "Key: $key, Value: ${exitCode[$key]}"
-done
-
-
