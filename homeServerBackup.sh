@@ -131,13 +131,16 @@ else
 fi
 #
 declare -A exitCode=(
+    [cloudBackupsCleanerFiles]=0
+    [cloudBackupsCleanerFolders]=0
+    [localBackupsCleaner]=0
     [localBackupHomeDirectory]=0
     [localBackupDockerVolumes]=0
     [localBackupDockerBindMounts]=0
     [cloudBackup]=0
-    [localBackupsCleaner]=0
-    [cloudBackupsCleanerFiles]=0
-    [cloudBackupsCleanerFolder]=0
+    [daily-backupCloudCleanerFiles]=0
+    [daily-backupCloudCleanerFolders]=0
+    [daily-backupLocalCleaner]=0
     [daily-backupArchiver]=0
 )
 #
@@ -207,7 +210,7 @@ if [ "$type" == "cleaner" ]; then
     exitCode[cloudBackupsCleanerFolders]=$?
     if [ "${exitCode[cloudBackupsCleanerFiles]}" -eq 0 ] && [ "${exitCode[cloudBackupsCleanerFolders]}" -eq 0 ]; then
         echo "========================="
-        echo "Old backups cleaner (cloud) cleaner performed"
+        echo "Old backups cleaner (cloud) performed"
         echo "========================="
     else
         echo "#########################"
@@ -244,8 +247,8 @@ if [ "$type" != "cleaner" ]; then
                 -v "$backupDir"/"$type"/"$today":/backup \
                 ubuntu \
                 tar cvf /backup/"${volumeDocker[name]}".tar "${volumeDocker[volumePath]}"
-                declare localBackupDockerVolumes=$?
-                if [ $localBackupDockerVolumes -eq 0 ]; then
+                exitCode[localBackupDockerVolumes]=$?
+                if [ "${exitCode[localBackupDockerVolumes]}" -eq 0 ]; then
                     if [ "${volumeDocker[stop]}" == true ]; then
                         docker start "${volumeDocker[container]}"
                         echo "========================="
@@ -289,8 +292,8 @@ if [ "$type" != "cleaner" ]; then
             fi
             mkdir -pv "$backupDir"/"$type"/"$today"
             tar cvf "$backupDir"/"$type"/"$today"/"$container".tar "$homeDir"/docker/"$container"
-            declare localBackupDockerBindMounts=$?
-            if [ $localBackupDockerBindMounts -eq 0 ]; then
+            exitCode[localBackupDockerBindMounts]=$?
+            if [ "${exitCode[localBackupDockerBindMounts]}" -eq 0 ]; then
                 if  [[ "${bindDockerStop[*]}" =~ "$container" ]]; then
                     docker start "$container"
                     echo "========================="
@@ -326,8 +329,8 @@ if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Local Backup | Home directory" ]]; then
         mkdir -pv "$backupDir"/"$type"/"$today"
         tar --exclude="docker" "${excludeDir[@]/#/--exclude=}" -cvf "$backupDir"/"$type"/"$today"/"$homeName".tar "$homeDir"/
-        declare localBackupHomeDirectory=$?
-        if [ $localBackupHomeDirectory -eq 0 ]; then
+        exitCode[localBackupHomeDirectory]=$?
+        if [ "${exitCode[localBackupHomeDirectory]}" -eq 0 ]; then
             echo "========================="
             echo "$homeDir backuped as $homeName"
             echo "========================="
@@ -359,10 +362,16 @@ if [ "$type" != "cleaner" ]; then
             --user "$(id -u)":"$(id -g)" \
             rclone/rclone \
             copy --progress "$backupDir"/"$type"/"$today" homeServerBackup:"$type"/"$today"
-            echo "========================="
-            echo "$backupDir"/"$type"/"$today encrypted and copied to the Cloud"
-            echo "========================="
-
+            exitCode[cloudBackup]=$?
+            if [ "${exitCode[cloudBackup]}" -eq 0 ]; then
+                echo "========================="
+                echo "$backupDir"/"$type"/"$today encrypted and copied to the Cloud"
+                echo "========================="
+            else
+                echo "#########################"
+                echo "(!) Error during cloud backup (!)"
+                echo "#########################"
+            fi
     fi
 fi
 #
@@ -385,9 +394,16 @@ fi
 if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
             find "$backupDir"/daily/ -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
-            echo "========================="
-            echo "Daily-backup cleaner performed"
-            echo "========================="
+            exitCode[daily-backupLocalCleaner]=$?
+            if [ "${exitCode[daily-backupLocalCleaner]}" -eq 0 ]; then
+                echo "========================="
+                echo "Daily-backup cleaner performed"
+                echo "========================="
+            else
+                echo "#########################"
+                echo "(!) Error during daily-backup cleaner (!)"
+                echo "#########################"
+            fi
     fi
 fi
 #
@@ -401,6 +417,7 @@ if [ "$type" != "cleaner" ]; then
             --user "$(id -u)":"$(id -g)" \
             rclone/rclone \
             delete homeServerBackup:/daily/ --min-age "$dailyCloud"d
+        exitCode[daily-backupCloudCleanerFiles]=$?
         docker run --rm \
             --volume "$homeDir"/docker/rclone/config:/config/rclone \
             --volume "$homeDir":"$homeDir" \
@@ -408,9 +425,16 @@ if [ "$type" != "cleaner" ]; then
             --user "$(id -u)":"$(id -g)" \
             rclone/rclone \
             rmdirs homeServerBackup:/ --leave-root
-        echo "========================="
-        echo "Daily-backup cloud cleaner performed"
-        echo "========================="
+        exitCode[daily-backupCloudCleanerFolders]=$?
+        if [ "${exitCode[daily-backupCloudCleanerFiles]}" -eq 0 ] && [ "${exitCode[daily-backupCloudCleanerFolders]}" -eq 0 ]; then
+            echo "========================="
+            echo "Daily-backup cloud cleaner performed"
+            echo "========================="
+        else
+            echo "#########################"
+            echo "(!) Error during daily-backup cloud cleaner (!)"
+            echo "#########################"
+        fi
     fi
 fi
 #
@@ -434,9 +458,16 @@ if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup archiver" ]]; then
         if [ "$todayDayOfMonth" -eq 1 ] || [ "$todayDayOfMonth" -eq 11 ] || [ "$todayDayOfMonth" -eq 21 ]; then
             rsync -r "$backupDir"/daily/"$today" "$backupDir"/archive/
-            echo "========================="
-            echo "Daily-backup archiver performed"
-            echo "========================="
+            exitCode[daily-backupArchiver]=$?
+            if [ "${exitCode[daily-backupArchiver]}" -eq 0 ]; then
+                echo "========================="
+                echo "Daily-backup archiver performed"
+                echo "========================="
+            else
+                echo "#########################"
+                echo "(!) Error during daily-backup archiver (!)"
+                echo "#########################"
+            fi
         fi
     fi
 fi
@@ -458,8 +489,32 @@ if [ "$NetdataSilencer" == true ]; then
     echo "========================="
 fi
 #
-#   Convert functionalities array to string with newlines after each functionality
-declare functionalitySummary=$(printf "= %s\n" "${functionality[@]}")
+#   Sum up Script with performed Functionalities
+declare functionalitySummary
+#
+if [ "$type" == "cleaner" ]; then
+    if [ "${exitCode[localBackupsCleaner]}" -eq 0 ] && [ "${exitCode[cloudBackupsCleanerFiles]}" -eq 0 ] && [ "${exitCode[cloudBackupsCleanerFolders]}" -eq 0 ]; then
+        functionalitySummary="Old backups cleaner performed"
+    else
+        functionalitySummary="(!) Error during old backups cleaner - details available in logs/log_""$type""_""$today"".out (!)"
+    fi
+fi
+#
+#   Check if all of the functionalities performed without errors
+declare exitCodes=0
+for value in "${exitCode[@]}"; do
+    # Multiply the current value with the result
+    ((exitCodes *= value))
+done
+
+#
+if [ "$type" != "cleaner" ]; then
+    if [ "$exitCodes" -eq 0 ]; then
+        functionalitySummary="Backup completed \n$(printf "= %s\n" "${functionality[@]}")"
+    else
+        functionalitySummary="(!) Error during backup - details available in logs/log_""$type""_""$today"".out (!)"
+    fi
+fi
 #
 #   Script end time 
 declare endTime="$(date '+%F_%H-%M-%S')"
@@ -469,7 +524,6 @@ declare totalDuration="$((SECONDS/60)) min $((SECONDS%60)) sec"
 #
 #   Declare summary message
 declare summary="=========================
-Following tasks completed:
 $functionalitySummary
 Start:              $today
 End:                $endTime
@@ -491,6 +545,9 @@ curl -s "$GotifyHost" -F "title=$GotifyTitle" -F "message=$summary" -F "priority
 #                                                                           #
 #===========================================================================#
 #===========================================================================#
-
+# TEST
+for key in "${!exitCode[@]}"; do
+    echo "Key: $key, Value: ${exitCode[$key]}"
+done
 
 
