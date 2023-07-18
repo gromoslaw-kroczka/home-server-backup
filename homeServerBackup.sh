@@ -393,7 +393,7 @@ fi
 #   Local daily cleaner
 if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
-            find "$backupDir"/daily/ -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
+            find "$backupDir"/daily/ -maxdepth 1 -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
             exitCode[daily-backupLocalCleaner]=$?
             if [ "${exitCode[daily-backupLocalCleaner]}" -eq 0 ]; then
                 echo "========================="
