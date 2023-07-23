@@ -176,7 +176,7 @@ fi
 if [ "$type" == "cleaner" ]; then
     #   Local backups cleaner
     cd "$backupDir"/ || { echo "Cannot cd into $backupDir"; exit 1; }
-    find . \( -path ./daily -prune -o -path ./archive -prune \) -o -type d -exec rm -rf "{}" \;
+    find . \( -path ./daily -prune -o -path ./archive -prune \) -o -maxdepth 1 -type d -exec rm -rf "{}" \;
     exitCode[localBackupsCleaner]=$?
     if [ "${exitCode[localBackupsCleaner]}" -eq 0 ]; then
         echo "========================="
@@ -393,7 +393,7 @@ fi
 #   Local daily cleaner
 if [ "$type" != "cleaner" ]; then
     if  [[ "${functionality[*]}" =~ "Daily-backup cleaner" ]]; then
-            find "$backupDir"/daily/ -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
+            find "$backupDir"/daily/ -maxdepth 1 -type d -mtime +"$((dailyLocal - 1))" -exec rm -rf "{}" \;
             exitCode[daily-backupLocalCleaner]=$?
             if [ "${exitCode[daily-backupLocalCleaner]}" -eq 0 ]; then
                 echo "========================="
