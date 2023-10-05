@@ -116,7 +116,7 @@ echo "========================="
 #
 #region | 02.04.    Import parameters & exit codes declarations
 #
-source parameters.sh
+source parameters.sh || { echo "Cannot find parameters.sh"; exit 1; }
 #
 #   Declare 'funcionality' array and assaign to it valuse
 #   from (...)Daily or (...)Instant array from 'parameters.sh'
