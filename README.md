@@ -76,7 +76,7 @@ File  | Description
     2. Add scheduled script execution\
         For example below code with execute script located in <example directory> everyday at 2:00 am.
         ```shell
-        * 2 * * * cd /<example directory> && ./homeServerBackup.sh -t daily
+        0 2 * * * cd /<example directory> && ./homeServerBackup.sh -t daily
          ```
         To set up cron schedule expressions see [crontab gutu][crontab]
 
